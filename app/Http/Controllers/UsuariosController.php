@@ -14,9 +14,9 @@ class UsuariosController extends Controller
 
     public function index()
     {
-      $usuarios = Usuarios::getAll();
+      $users = Usuarios::getAll();
 
-      return response()->json($usuarios);
+      return response()->json($users);
     }
 
     /**
@@ -24,7 +24,19 @@ class UsuariosController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $validated = $request->validate([
+            'nomeUsuario' => 'required|string|max:100',
+            'telefoneUsuario' => 'required|string|max:15',
+            'emailUsuario' => 'required|string|email|unique:usuarios,emailUsuario',
+            'senhaUsuario' => 'required|string|min:6',
+            'tipoUsuario' => 'required|in:admin,usuario',
+            'tipoPlanoUsuario' => 'required|in:free,pago',
+            'pagamentoUsuario' => 'required|in:S,N'
+        ]);
+
+        $users = Usuarios::create($validated);
+
+        return response()->json($users);
     }
 
     /**
