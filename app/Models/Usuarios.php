@@ -8,6 +8,8 @@ class Usuarios extends Model
 {
     protected $table = 'usuarios';
 
+    public $timestamps = false; // usado quando nao tem no banco as tabelas de 'criado'e 'modificado'
+
     protected $fillable = [
         'nomeUsuario',
         'telefoneUsuario',
@@ -22,19 +24,9 @@ class Usuarios extends Model
         'senhaUsuario'
     ];
 
-    public static function getAll(){
-        $users = Usuarios::all();
-
-        return $users;
-    }
-
-    public static function create($data)
+    public function setSenhaUsuarioAttribute($value)
     {
-        // $data['senhaUsuario'] = bcrypt($data['senhaUsuario']);
-
-        $users = Usuarios::create($data);
-
-        return response()->json($users);
+        $this->attributes['senhaUsuario'] = bcrypt($value);
     }
 }
 

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 
 use App\Models\Usuarios;
 
@@ -14,9 +15,7 @@ class UsuariosController extends Controller
 
     public function index()
     {
-      $users = Usuarios::getAll();
-
-      return response()->json($users);
+        return Usuarios::all();
     }
 
     /**
@@ -61,5 +60,25 @@ class UsuariosController extends Controller
     public function destroy(string $id)
     {
         //
+    }
+
+    public function verifyPw(Request $request){
+
+        $emailUsuario = $request->input('emailUsuario');
+        $senhaUsuario = $request->input('senhaUsuario');
+
+        $user = Usuarios::where('emailUsuario', $emailUsuario)->first();
+
+        if ($user) {
+            if(Hash::check($senhaUsuario, $user->senhaUsuario)){
+                return response()->json(['message'=>'senha correta'], 200);
+            }
+            else {
+                return response()->json(['message'=>'senha incorreta'], 401);
+            }
+        }else {
+            return response()->json(['message'=>'Usuário não encontrado'], 404);            
+        }
+
     }
 }
