@@ -24,11 +24,11 @@ class UsuariosController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'nomeUsuario' => 'required|string|max:100',
-            'telefoneUsuario' => 'required|string|max:15',
-            'emailUsuario' => 'required|string|email|unique:usuarios,emailUsuario',
-            'senhaUsuario' => 'required|string|min:6',
-            'tipoUsuario' => 'required|in:admin,usuario',
+            'nomeUsuario     ' => 'required|string|max:100',
+            'telefoneUsuario ' => 'required|string|max:15',
+            'emailUsuario    ' => 'required|string|email|unique:usuarios,emailUsuario',
+            'senhaUsuario    ' => 'required|string|min:6',
+            'tipoUsuario     ' => 'required|in:admin,usuario',
             'tipoPlanoUsuario' => 'required|in:free,pago',
             'pagamentoUsuario' => 'required|in:S,N'
         ]);
@@ -43,7 +43,12 @@ class UsuariosController extends Controller
      */
     public function show(string $id)
     {
-        //
+        $user = Usuarios::where('idUsuario',  $id)->first();
+        if (!$user) {
+            return response()->json(['error' => 'Usuário não encontrado'], 404);
+        }
+
+        return response()->json($user);
     }
 
     /**
@@ -51,7 +56,15 @@ class UsuariosController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        $user = Usuarios::where('idUsuario', $id)->first();
+        
+        if(!$user){
+            return response()->json(['error' => 'Usuário não encontrado']);
+        }
+
+        $updated = $user->update($request->all());
+        
+        return response()->json(['message:' => 'Dados Atualizados com sucesso'], 200);
     }
 
     /**

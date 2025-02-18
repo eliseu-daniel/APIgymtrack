@@ -8,6 +8,8 @@ class Usuarios extends Model
 {
     protected $table = 'usuarios';
 
+    protected $primaryKey = 'idUsuario';
+
     public $timestamps = false; // usado quando nao tem no banco as tabelas de 'criado'e 'modificado'
 
     protected $fillable = [
