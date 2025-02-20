@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 
+use App\Models\Pacientes;
+
 class PacientesController extends Controller
 {
     /**
@@ -11,7 +13,7 @@ class PacientesController extends Controller
      */
     public function index()
     {
-        //
+        return Pacientes::all();
     }
 
     /**
