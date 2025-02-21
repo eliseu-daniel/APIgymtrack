@@ -15,9 +15,7 @@ Route::prefix('v1')->group(function () {
     Route::apiResource('usuarios', UsuariosController::class);
     Route::post('usuarios/verifyPw', [UsuariosController::class, 'verifyPw']);
     
-
     Route::apiResource('pacientes', PacientesController::class);
-
 
     Route::apiResource('antropometria', AntropometriaController::class);
 

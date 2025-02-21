@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 
+use Illuminate\Support\Carbon;
+
 use App\Models\Pacientes;
 
 class PacientesController extends Controller
@@ -21,7 +23,24 @@ class PacientesController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $validated = $request->validate([
+            'idUsuario'            => 'required|int',
+            'nomePaciente'         => 'required|string|max:100',
+            'emailPaciente'        => 'required|string|email|unique:pacientes,emailPaciente',
+            'telefonePaciente'     => 'required|string|max:15',
+            'nascimentoPaciente'   => 'required|date',
+            'planoAcompanhamento'  => 'required|string|max:100',
+            'inicioAcompanhamento' => 'nullable|date',
+            'sexoPaciente'         => 'string|in:F,M',
+            'pagamento'            => 'required|in:mensal,trimestral,semestral',
+            'alergias'             => 'nullable|string|max:100'
+        ]);
+
+        $fimAcompanhamento = $this->calcEndDate($request);
+
+        $patient = Pacientes::create(array_merge($validated, $fimAcompanhamento));
+
+        return response()->json(['message' => 'Paciente cadastrado com sucesso!', 'data' =>$patient], 201);
     }
 
     /**
@@ -29,7 +48,13 @@ class PacientesController extends Controller
      */
     public function show(string $id)
     {
-        //
+        $patient = Pacientes::where('idPaciente', $id)->first();
+
+        if (!$patient) {
+            return response()->json(['error' => 'Paciente não encontrado'], 404);
+        }
+
+        return response()->json($patient, 200);
     }
 
     /**
@@ -37,7 +62,30 @@ class PacientesController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        $patient = Pacientes::where('idPaciente', $id)->first();
+
+        if (!$patient) {
+            return response()->json(['error' => 'Paciente não encontrado', 404]);
+        }
+
+        $validated = $request->validate([
+            'idUsuario'            => 'required|int',
+            'nomePaciente'         => 'required|string|max:100',
+            'emailPaciente'        => 'required|string|email|unique:pacientes,emailPaciente,' . $id . ',idPaciente',
+            'telefonePaciente'     => 'required|string|max:15',
+            'nascimentoPaciente'   => 'required|date',
+            'planoAcompanhamento'  => 'required|string|max:100',
+            'inicioAcompanhamento' => 'nullable|date',
+            'sexoPaciente'         => 'string|in:F,M',
+            'pagamento'            => 'required|in:mensal,trimestral,semestral',
+            'alergias'             => 'nullable|string|max:100'
+        ]);
+
+        $fimAcompanhamento = $this->calcEndDate($request);
+
+        $patient->update(array_merge($validated, $fimAcompanhamento));
+
+        return response()->json(['message' => 'Paciente Atualizado com sucesso!', 'data' =>$patient], 200);
     }
 
     /**
@@ -45,6 +93,38 @@ class PacientesController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        $patient = Pacientes::where('idPaciente', $id)->first();
+
+        if (!$patient) {
+            return response()->json(['error' => 'Paciente não encontrado'], 404);
+        }
+
+        $patient->delete();
+
+        return response()->json(['message' => 'Paciente Deletado com sucesso!'], 200);
+    }
+
+    public function calcEndDate(Request $request)
+    {
+        $validated = $request->validate([
+            'inicioAcompanhamento' => 'required|date',
+            'pagamento'            => 'required|in:mensal,trimestral,semestral'
+        ]);
+
+        $days = match ($request->pagamento) {
+            "mensal" => 30,
+            "trimestral" => 90,
+            "semestral" => 180,
+            default => 0,
+        };
+
+        $fimAcompanhamento = null;
+
+        if (!empty($request->inicioAcompanhamento)) {
+            $fimAcompanhamento = Carbon::parse($request->inicioAcompanhamento)->addDays($days)->format('Y-m-d');
+        }
+
+        return ['fimAcompanhamento' => $fimAcompanhamento];
+
     }
 }
