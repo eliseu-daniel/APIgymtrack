@@ -35,7 +35,7 @@ class UsuariosController extends Controller
 
         $users = Usuarios::create($validated);
 
-        return response()->json($users);
+        return response()->json(['message:' => 'Usuário criado com sucesso', 'data' => $users], 201);
     }
 
     /**
@@ -48,7 +48,7 @@ class UsuariosController extends Controller
             return response()->json(['error' => 'Usuário não encontrado'], 404);
         }
 
-        return response()->json($user);
+        return response()->json(['data' => $user],  200);
     }
 
     /**
@@ -64,7 +64,7 @@ class UsuariosController extends Controller
 
         $updated = $user->update($request->all());
         
-        return response()->json(['message:' => 'Dados Atualizados com sucesso'], 200);
+        return response()->json(['message:' => 'Dados Atualizados com sucesso', 'data' => $updated], 200);
     }
 
     /**
