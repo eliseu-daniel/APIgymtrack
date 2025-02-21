@@ -57,7 +57,28 @@ class AntropometriaController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        $antro = Antropometria::where('idAntropometria', $id)->first();
+
+        if (!$antro) {
+            return response()->json(['error' => 'Paciente não encontrado'], 404);
+        }
+
+        $validated = $request->validate([
+            'idPaciente'      => 'required|int',
+            'pesoInicial'     => 'required|numeric|min:0|max:300',
+            'altura'          => 'required|numeric|min:0|max:300',
+            'gorduraCorporal' => 'required|numeric|min:0|max:300',
+            'nivelAtvFisica'  => 'nullable|string|max:50',
+            'objetivo'        => 'nullable|string|max:50',
+            'tmb'             => 'nullable|numeric|min:0|max:300',
+            'getAntro'        => 'nullable|int',
+            'lesoes'          => 'nullable|string|max:100'
+        ]);
+
+        $antro->update($validated);
+
+        return response()->json(['message' => 'Antropometria atualizada com sucesso', 'data' => $antro], 200);
+
     }
 
     /**
@@ -65,6 +86,14 @@ class AntropometriaController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        $antro = Antropometria::where('idAntropometria', $id)->first();
+
+        if (!$antro) {
+            return response()->json(['error' => 'Paciente não encontrado'], 404);
+        }
+
+        $antro->delete($id);
+
+        return response()->json(['message' => 'Antropometria deletada com sucesso'], 200);
     }
 }
