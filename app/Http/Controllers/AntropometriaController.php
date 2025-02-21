@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 
+use App\Models\Antropometria;
+
 class AntropometriaController extends Controller
 {
     /**
@@ -11,7 +13,7 @@ class AntropometriaController extends Controller
      */
     public function index()
     {
-        //
+        return Antropometria::all();
     }
 
     /**
@@ -19,7 +21,21 @@ class AntropometriaController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $validated = $request->validate([
+            'idPaciente'      => 'required|int',
+            'pesoInicial'     => 'required|numeric|min:0|max:300',
+            'altura'          => 'required|numeric|min:0|max:300',
+            'gorduraCorporal' => 'required|numeric|min:0|max:300',
+            'nivelAtvFisica'  => 'nullable|string|max:50',
+            'objetivo'        => 'nullable|string|max:50',
+            'tmb'             => 'nullable|numeric|min:0|max:300',
+            'getAntro'        => 'nullable|int',
+            'lesoes'          => 'nullable|string|max:100'
+        ]);
+
+        $antro = Antropometria::create($validated);
+
+        return response()->json(['message:' => 'Antropometria criada com sucesso', 'data' => $antro], 201);
     }
 
     /**
@@ -27,7 +43,13 @@ class AntropometriaController extends Controller
      */
     public function show(string $id)
     {
-        //
+        $antro = Antropometria::where('idAntropometria', $id)->first();
+
+        if (!$antro) {
+            return response()->json(['error:' => 'Antropometria não existe'], 404);
+        }
+
+        return response()->json($antro, 200);
     }
 
     /**
