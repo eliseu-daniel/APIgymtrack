@@ -29,10 +29,10 @@ class PacientesController extends Controller
             'emailPaciente'        => 'required|string|email|unique:pacientes,emailPaciente',
             'telefonePaciente'     => 'required|string|max:15',
             'nascimentoPaciente'   => 'required|date',
-            'planoAcompanhamento'  => 'required|string|max:100',
+            'planoAcompanhamento'  => 'required|string|max:100|in:mensal,trimestral,semestral',
             'inicioAcompanhamento' => 'nullable|date',
             'sexoPaciente'         => 'string|in:F,M',
-            'pagamento'            => 'required|in:mensal,trimestral,semestral',
+            'pagamento'            => 'string',
             'alergias'             => 'nullable|string|max:100'
         ]);
 
@@ -74,10 +74,10 @@ class PacientesController extends Controller
             'emailPaciente'        => 'required|string|email|unique:pacientes,emailPaciente,' . $id . ',idPaciente',
             'telefonePaciente'     => 'required|string|max:15',
             'nascimentoPaciente'   => 'required|date',
-            'planoAcompanhamento'  => 'required|string|max:100',
+            'planoAcompanhamento'  => 'required|string|max:100|in:mensal,trimestral,semestral',
             'inicioAcompanhamento' => 'nullable|date',
             'sexoPaciente'         => 'string|in:F,M',
-            'pagamento'            => 'required|in:mensal,trimestral,semestral',
+            'pagamento'            => 'string',
             'alergias'             => 'nullable|string|max:100'
         ]);
 
@@ -108,10 +108,10 @@ class PacientesController extends Controller
     {
         $validated = $request->validate([
             'inicioAcompanhamento' => 'required|date',
-            'pagamento'            => 'required|in:mensal,trimestral,semestral'
+            'planoAcompanhamento'            => 'required|in:mensal,trimestral,semestral'
         ]);
 
-        $days = match ($request->pagamento) {
+        $days = match ($request->planoAcompanhamento) {
             "mensal" => 30,
             "trimestral" => 90,
             "semestral" => 180,
@@ -120,8 +120,8 @@ class PacientesController extends Controller
 
         $fimAcompanhamento = null;
 
-        if (!empty($request->inicioAcompanhamento)) {
-            $fimAcompanhamento = Carbon::parse($request->inicioAcompanhamento)->addDays($days)->format('Y-m-d');
+        if (!empty($request->planoAcompanhamento)) {
+            $fimAcompanhamento = Carbon::parse($request->planoAcompanhamento)->addDays($days)->format('Y-m-d');
         }
 
         return ['fimAcompanhamento' => $fimAcompanhamento];
