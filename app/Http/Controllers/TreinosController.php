@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 
+use App\Models\Treinos;
+
 class TreinosController extends Controller
 {
     /**
@@ -11,7 +13,7 @@ class TreinosController extends Controller
      */
     public function index()
     {
-        //
+        return response()->json(Treinos::all());
     }
 
     /**
@@ -19,7 +21,24 @@ class TreinosController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $validated = $request->validate([
+            'idPaciente'      => 'required|int',
+            'idAntropometria' => 'required|int',
+            'inicioTreino'    => 'required|date',
+            'tipoTreino'      => 'nullable|string|max:50',
+            'grupoMuscular'   => 'nullable|string|max:50',
+            'seriesTreino'    => 'nullable|int',
+            'repeticoesTreino'=> 'nullable|int',
+            'cargaInicial'    => 'nullable|numeric',
+            'cargaAtual'      => 'nullable|numeric',
+            'tempoDescanso'   => 'nullable|string',
+            'diaSemana'       => 'nullable|string',
+            'linksExecucao'   => 'nullable|string'
+        ]);
+
+        $workout = Treinos::create($validated);
+
+        return response()->json(['message' => 'Treino criado com sucesso.', 'data' => $workout], 201);
     }
 
     /**
@@ -27,7 +46,13 @@ class TreinosController extends Controller
      */
     public function show(string $id)
     {
-        //
+        $workout = Treinos::where('idTreino', $id)->first();
+
+        if (!$workout) {
+            return response()->json(['error' => 'Treino não encontrado'], 404);
+        }
+
+        return response()->json(['data' => $workout], 200);
     }
 
     /**
@@ -35,7 +60,31 @@ class TreinosController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+
+        $workout = Treinos::where('idTreino', $id)->first();
+
+        if (!$workout) {
+            return response()->json(['error' => 'Treino não encontrado'], 404);
+        }
+        
+        $validated = $request->validate([
+            'idPaciente'      => 'required|int',
+            'idAntropometria' => 'required|int',
+            'inicioTreino'    => 'required|date',
+            'tipoTreino'      => 'nullable|string|max:50',
+            'grupoMuscular'   => 'nullable|string|max:50',
+            'seriesTreino'    => 'nullable|int',
+            'repeticoesTreino'=> 'nullable|int',
+            'cargaInicial'    => 'nullable|numeric',
+            'cargaAtual'      => 'nullable|numeric',
+            'tempoDescanso'   => 'nullable|string',
+            'diaSemana'       => 'nullable|string',
+            'linksExecucao'   => 'nullable|string'
+        ]);
+
+        $workout->update($validated);
+
+        return response()->json(['message' => 'Treino alterado com sucesso.', 'data' => $workout], 200);
     }
 
     /**
@@ -43,6 +92,14 @@ class TreinosController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        $workout = Treinos::where('idTreino', $id)->first();
+
+        if (!$workout) {
+            return response()->json(['error' => 'Treino não encontrado'], 404);
+        }   
+
+        $workout->delete($id);
+
+        return response()->json(['message' => 'Treino deletado com sucesso.'], 200);
     }
 }
