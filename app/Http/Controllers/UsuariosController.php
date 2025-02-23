@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Auth;
 
 use App\Models\Usuarios;
 
@@ -86,14 +87,24 @@ class UsuariosController extends Controller
 
     public function verifyPw(Request $request){
 
+        $request->validate([
+            'emailUsuario' => 'required|email',
+            'senhaUsuario' => 'required|string'
+        ]);
+
         $emailUsuario = $request->input('emailUsuario');
         $senhaUsuario = $request->input('senhaUsuario');
 
         $user = Usuarios::where('emailUsuario', $emailUsuario)->first();
 
+        $tokenApi = $user->createToken('tokenApi')->plainTextToken;
+
         if ($user) {
             if(Hash::check($senhaUsuario, $user->senhaUsuario)){
-                return response()->json(['message'=>'senha correta'], 200);
+                return response()->json(['status' => true,
+                'token' => $tokenApi, 
+                'message'=>'Login realizado com sucesso',
+                'data' => $user], 200);
             }
             else {
                 return response()->json(['message'=>'senha incorreta'], 401);
@@ -101,6 +112,21 @@ class UsuariosController extends Controller
         }else {
             return response()->json(['message'=>'Usuário não encontrado'], 404);            
         }
+
+    }
+
+    public function loggout(Request $request)
+    {
+        $user = Auth::user();
+
+        if (!$user) {
+            return response()->json(['error' => 'Usuário não autenticado'], 401);
+        }
+        
+        $user->currentAccessToken()->delete();
+        
+        return response()->json(['status' => true,
+        'message' => 'Loggout realizado com sucesso'], 200);
 
     }
 }
