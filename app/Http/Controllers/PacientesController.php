@@ -15,7 +15,8 @@ class PacientesController extends Controller
      */
     public function index()
     {
-        return Pacientes::all();
+        $patient = Pacientes::where('idUsuario', auth()->id())->get();
+        return response()->json(['data' =>$patient], 200);
     }
 
     /**
@@ -48,7 +49,7 @@ class PacientesController extends Controller
      */
     public function show(string $id)
     {
-        $patient = Pacientes::where('idPaciente', $id)->first();
+        $patient = Pacientes::where('idPaciente', $id)->where('idUsuario', auth()->id())->first();
 
         if (!$patient) {
             return response()->json(['error' => 'Paciente não encontrado'], 404);
@@ -62,7 +63,7 @@ class PacientesController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        $patient = Pacientes::where('idPaciente', $id)->first();
+        $patient = Pacientes::where('idPaciente', $id)->where('idUsuario', auth()->id())->first();
 
         if (!$patient) {
             return response()->json(['error' => 'Paciente não encontrado', 404]);
@@ -93,7 +94,7 @@ class PacientesController extends Controller
      */
     public function destroy(string $id)
     {
-        $patient = Pacientes::where('idPaciente', $id)->first();
+        $patient = Pacientes::where('idPaciente', $id)->where('idUsuario', auth()->id())->first();
 
         if (!$patient) {
             return response()->json(['error' => 'Paciente não encontrado'], 404);

@@ -6,7 +6,10 @@ use Illuminate\Database\Eloquent\Model;
 
 use Laravel\Sanctum\HasApiTokens;
 
-class Usuarios extends Model
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
+
+class Usuarios extends Authenticatable
 {
 
     use HasApiTokens;
