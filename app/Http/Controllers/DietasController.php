@@ -13,7 +13,17 @@ class DietasController extends Controller
      */
     public function index()
     {
-        return response()->json(Dietas::all());
+
+        $data = Dietas::join('pacientes', 'dietas.idPaciente', '=', 'pacientes.idPaciente')
+            ->join('antropometria', 'dietas.idAntropometria', '=', 'antropometria.idAntropometria')
+            ->select('dietas.*','antropometria.*', 'pacientes.nomePaciente', 'pacientes.nomePaciente', 'pacientes.planoAcompanhamento')
+            ->get();
+
+        if (!$data) {
+            return response()->json(['mesasge' => 'Dieta não encontrada'], 404);
+        }
+        
+        return response()->json($data, 200);
     }
 
     /**
@@ -22,16 +32,18 @@ class DietasController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'idPaciente' => 'required|int',
-            'idAntropometria' => 'required|int',
-            'inicioDieta' => 'required|date',
-            'horarioRefeicao' => 'required|string|max:6',
-            'tipoDieta' => 'nullable|string|max:50',
-            'pesoAtual' => 'nullable|numeric'
+            'idPaciente'        => 'required|int',
+            'idAntropometria'   => 'required|int',
+            'inicioDieta'       => 'required|date',
+            'horarioRefeicao'   => 'required|string|max:6',
+            'tipoDieta'         => 'nullable|string|max:50',
+            'pesoAtual'         => 'nullable|numeric'
         ]);
 
         $diet = Dietas::create($validated);
 
+        $diet->load('pacientes:idPaciente, nomePaciente', 'antropometria:idAntropometria'); //testar
+        
         return response()->json(['message' => 'Dieta criada com sucesso!.', 'data' => $diet], 201);
     }
 
@@ -40,26 +52,29 @@ class DietasController extends Controller
      */
     public function show(string $id)
     {
-        $diet = Dietas::where('idDieta', $id)->first();
-
+        $diet = Dietas::join('pacientes', 'dietas.idPaciente', '=', 'pacientes.idPaciente')
+        ->join('antropometria', 'dietas.idAntropometria', '=', 'antropometria.idAntropometria')
+        ->select('dietas.*','antropometria.*', 'pacientes.nomePaciente', 'pacientes.nomePaciente', 'pacientes.planoAcompanhamento')
+        ->where('idDieta', $id)->first();
+        
         if (!$diet) {
             return response()->json(['mesasge' => 'Dieta não encontrada'], 404);
         }
-
+        
         return response()->json(['data' => $diet], 200);
     }
-
+    
     /**
      * Update the specified resource in storage.
      */
     public function update(Request $request, string $id)
     {
         $diet = Dietas::where('idDieta', $id)->first();
-
+        
         if (!$diet) {
             return response()->json(['mesasge' => 'Dieta não encontrada'], 404);
         }
-
+        
         $validated = $request->validate([
             'idPaciente' => 'required|int',
             'idAntropometria' => 'required|int',
@@ -68,8 +83,11 @@ class DietasController extends Controller
             'tipoDieta' => 'nullable|string|max:50',
             'pesoAtual' => 'nullable|numeric'
         ]);
-
+        
         $diet->update($validated);
+        
+        $diet->load('pacientes:idPaciente, nomePaciente', 'antropometria:idAntropometria'); //testar
+
         return response()->json(['message' => 'Dieta atualizada com sucesso!.', 'data' => $diet], 200);
     }
 

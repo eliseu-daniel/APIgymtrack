@@ -25,7 +25,6 @@ class PacientesController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'idUsuario'            => 'required|int',
             'nomePaciente'         => 'required|string|max:100',
             'emailPaciente'        => 'required|string|email|unique:pacientes,emailPaciente',
             'telefonePaciente'     => 'required|string|max:15',
@@ -36,6 +35,8 @@ class PacientesController extends Controller
             'pagamento'            => 'string',
             'alergias'             => 'nullable|string|max:100'
         ]);
+
+        $validated['idUsuario'] = auth()->id();
 
         $fimAcompanhamento = $this->calcEndDate($request);
 
@@ -49,7 +50,9 @@ class PacientesController extends Controller
      */
     public function show(string $id)
     {
-        $patient = Pacientes::where('idPaciente', $id)->where('idUsuario', auth()->id())->first();
+        $patient = Pacientes::where('idPaciente', $id)
+            ->where('idUsuario', auth()->id())
+            ->first();
 
         if (!$patient) {
             return response()->json(['error' => 'Paciente não encontrado'], 404);
@@ -63,7 +66,9 @@ class PacientesController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        $patient = Pacientes::where('idPaciente', $id)->where('idUsuario', auth()->id())->first();
+        $patient = Pacientes::where('idPaciente', $id)
+            ->where('idUsuario', auth()->id())
+            ->first();
 
         if (!$patient) {
             return response()->json(['error' => 'Paciente não encontrado', 404]);
@@ -82,6 +87,8 @@ class PacientesController extends Controller
             'alergias'             => 'nullable|string|max:100'
         ]);
 
+        $validated['idUsuario'] = auth()->id();
+
         $fimAcompanhamento = $this->calcEndDate($request);
 
         $patient->update(array_merge($validated, $fimAcompanhamento));
@@ -94,7 +101,9 @@ class PacientesController extends Controller
      */
     public function destroy(string $id)
     {
-        $patient = Pacientes::where('idPaciente', $id)->where('idUsuario', auth()->id())->first();
+        $patient = Pacientes::where('idPaciente', $id)
+            ->where('idUsuario', auth()->id())
+            ->first();
 
         if (!$patient) {
             return response()->json(['error' => 'Paciente não encontrado'], 404);

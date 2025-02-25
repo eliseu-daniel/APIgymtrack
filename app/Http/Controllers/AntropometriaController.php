@@ -13,7 +13,11 @@ class AntropometriaController extends Controller
      */
     public function index()
     {
-        return Antropometria::all();
+        $data = Antropometria::join('pacientes', 'antropometria.idPaciente', '=', 'pacientes.idPaciente')
+            ->select('antropometria.*', 'pacientes.nomePaciente')
+            ->get();
+
+        return response()->json($data, 200);
     }
 
     /**
@@ -35,6 +39,8 @@ class AntropometriaController extends Controller
 
         $antro = Antropometria::create($validated);
 
+        $antro->load('pacientes:idPaciente, nomePaciente');
+
         return response()->json(['message:' => 'Antropometria criada com sucesso', 'data' => $antro], 201);
     }
 
@@ -43,7 +49,9 @@ class AntropometriaController extends Controller
      */
     public function show(string $id)
     {
-        $antro = Antropometria::where('idAntropometria', $id)->first();
+        $antro = Antropometria::join('pacientes', 'antropometria.idPaciente', '=', 'pacientes.idPaciente')
+            ->select('antropometria.*', 'pacientes.nomePaciente')
+            ->where('idAntropometria', $id)->first();
 
         if (!$antro) {
             return response()->json(['error:' => 'Antropometria não existe'], 404);
@@ -76,6 +84,8 @@ class AntropometriaController extends Controller
         ]);
 
         $antro->update($validated);
+
+        $antro->load('pacientes:idPaciente, nomePaciente');
 
         return response()->json(['message' => 'Antropometria atualizada com sucesso', 'data' => $antro], 200);
 

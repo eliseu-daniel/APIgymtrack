@@ -13,7 +13,12 @@ class TreinosController extends Controller
      */
     public function index()
     {
-        return response()->json(Treinos::all());
+        $data = Treinos::join('pacientes', 'treinos.idPaciente', '=', 'pacientes.idPaciente')
+            ->join('antropometria', 'treinos.idAntropometria', '=', 'antropometria.idAntropometria')
+            ->select('treinos.*','antropometria.*', 'pacientes.nomePaciente', 'pacientes.nomePaciente', 'pacientes.planoAcompanhamento')
+            ->get();
+
+        return response()->json($data, 200);
     }
 
     /**
@@ -38,6 +43,14 @@ class TreinosController extends Controller
 
         $workout = Treinos::create($validated);
 
+        // $workout = Treinos::where('treinos.idTreino', $workout->idTreino)
+        //     ->join('pacientes', 'treinos.idPaciente', '=', 'pacientes.idPaciente')
+        //     ->join('antropometria', 'treinos.idAntropometria', '=', 'antropometria.idAntropometria')
+        //     ->select('treinos.*', 'antropometria.*', 'pacientes.nomePaciente', 'pacientes.planoAcompanhamento')
+        //     ->first();
+
+        $workout->load('pacientes:idPaciente, nomePaciente, planoAcompanhamento', 'antropometria:idAntropometria'); //testar
+
         return response()->json(['message' => 'Treino criado com sucesso.', 'data' => $workout], 201);
     }
 
@@ -46,7 +59,10 @@ class TreinosController extends Controller
      */
     public function show(string $id)
     {
-        $workout = Treinos::where('idTreino', $id)->first();
+        $workout = Treinos::join('pacientes', 'treinos.idPaciente', '=', 'pacientes.idPaciente')
+            ->join('antropometria', 'treinos.idAntropometria', '=', 'antropometria.idAntropometria')
+            ->select('treinos.*','antropometria.*', 'pacientes.nomePaciente', 'pacientes.nomePaciente', 'pacientes.planoAcompanhamento')
+            ->find($id);
 
         if (!$workout) {
             return response()->json(['error' => 'Treino não encontrado'], 404);
@@ -61,7 +77,7 @@ class TreinosController extends Controller
     public function update(Request $request, string $id)
     {
 
-        $workout = Treinos::where('idTreino', $id)->first();
+        $workout = Treinos::find($id);
 
         if (!$workout) {
             return response()->json(['error' => 'Treino não encontrado'], 404);
@@ -83,6 +99,8 @@ class TreinosController extends Controller
         ]);
 
         $workout->update($validated);
+
+        $workout->load(['pacientes:idPaciente,nomePaciente,planoAcompanhamento', 'antropometria']); //testar
 
         return response()->json(['message' => 'Treino alterado com sucesso.', 'data' => $workout], 200);
     }
