@@ -16,7 +16,7 @@ class DietasController extends Controller
 
         $data = Dietas::join('pacientes', 'dietas.idPaciente', '=', 'pacientes.idPaciente')
             ->join('antropometria', 'dietas.idAntropometria', '=', 'antropometria.idAntropometria')
-            ->select('dietas.*','antropometria.*', 'pacientes.nomePaciente', 'pacientes.nomePaciente', 'pacientes.planoAcompanhamento')
+            ->select('dietas.*','antropometria.*', 'pacientes.nomePaciente', 'pacientes.planoAcompanhamento')
             ->get();
 
         if (!$data) {
@@ -102,7 +102,7 @@ class DietasController extends Controller
             return response()->json(['mesasge' => 'Dieta não encontrada'], 404);
         }
 
-        $diet->delete($id);
+        $diet->delete();
         return response()->json(['message' => 'Dieta deletada com sucesso!.'], 200);
     }
 }

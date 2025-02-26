@@ -15,7 +15,7 @@ class TreinosController extends Controller
     {
         $data = Treinos::join('pacientes', 'treinos.idPaciente', '=', 'pacientes.idPaciente')
             ->join('antropometria', 'treinos.idAntropometria', '=', 'antropometria.idAntropometria')
-            ->select('treinos.*','antropometria.*', 'pacientes.nomePaciente', 'pacientes.nomePaciente', 'pacientes.planoAcompanhamento')
+            ->select('treinos.*','antropometria.*', 'pacientes.nomePaciente', 'pacientes.planoAcompanhamento')
             ->get();
 
         return response()->json($data, 200);
@@ -49,7 +49,7 @@ class TreinosController extends Controller
         //     ->select('treinos.*', 'antropometria.*', 'pacientes.nomePaciente', 'pacientes.planoAcompanhamento')
         //     ->first();
 
-        $workout->load('pacientes:idPaciente, nomePaciente, planoAcompanhamento', 'antropometria:idAntropometria'); //testar
+        $workout->load(['pacientes:idPaciente, nomePaciente, planoAcompanhamento', 'antropometria:idAntropometria']); //testar
 
         return response()->json(['message' => 'Treino criado com sucesso.', 'data' => $workout], 201);
     }
@@ -61,8 +61,10 @@ class TreinosController extends Controller
     {
         $workout = Treinos::join('pacientes', 'treinos.idPaciente', '=', 'pacientes.idPaciente')
             ->join('antropometria', 'treinos.idAntropometria', '=', 'antropometria.idAntropometria')
+            ->where('treinos.idTreino', $id)
+            ->where('pacientes.idUsuario', auth()->id())
             ->select('treinos.*','antropometria.*', 'pacientes.nomePaciente', 'pacientes.nomePaciente', 'pacientes.planoAcompanhamento')
-            ->find($id);
+            ->first();
 
         if (!$workout) {
             return response()->json(['error' => 'Treino não encontrado'], 404);
@@ -77,7 +79,7 @@ class TreinosController extends Controller
     public function update(Request $request, string $id)
     {
 
-        $workout = Treinos::find($id);
+        $workout = Treinos::where('idTreino', $id)->first();
 
         if (!$workout) {
             return response()->json(['error' => 'Treino não encontrado'], 404);
@@ -116,7 +118,7 @@ class TreinosController extends Controller
             return response()->json(['error' => 'Treino não encontrado'], 404);
         }   
 
-        $workout->delete($id);
+        $workout->delete();
 
         return response()->json(['message' => 'Treino deletado com sucesso.'], 200);
     }

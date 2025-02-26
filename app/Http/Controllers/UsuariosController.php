@@ -63,9 +63,19 @@ class UsuariosController extends Controller
             return response()->json(['error' => 'Usuário não encontrado'], 404);
         }
 
-        $updated = $user->update($request->all());
+        $validated = $request->validate([
+            'nomeUsuario'      => 'nullable|string|max:100',
+            'telefoneUsuario'  => 'nullable|string|max:15',
+            'emailUsuario'     => 'nullable|string|email|unique:usuarios,emailUsuario,' . $id . ',idUsuario',
+            'senhaUsuario'     => 'nullable|string|min:6',
+            'tipoUsuario'      => 'nullable|in:admin,usuario',
+            'tipoPlanoUsuario' => 'nullable|in:free,pago',
+            'pagamentoUsuario' => 'nullable|in:S,N'
+        ]);
+
+        $user->update($request->all());
         
-        return response()->json(['message:' => 'Dados Atualizados com sucesso', 'data' => $updated], 200);
+        return response()->json(['message:' => 'Dados Atualizados com sucesso', 'data' => $user], 200);
     }
 
     /**
@@ -92,26 +102,24 @@ class UsuariosController extends Controller
             'senhaUsuario' => 'required|string'
         ]);
 
-        $emailUsuario = $request->input('emailUsuario');
-        $senhaUsuario = $request->input('senhaUsuario');
+        $user = Usuarios::where('emailUsuario', $request->emailUsuario)->first();
 
-        $user = Usuarios::where('emailUsuario', $emailUsuario)->first();
+        if (!$user) {
+            return response()->json(['message' => 'Usuário não encontrado'], 404);
+        }
+
+        if (!Hash::check($request->senhaUsuario, $user->senhaUsuario)) {
+            return response()->json(['message' => 'Senha incorreta'], 401);
+        }
 
         $tokenApi = $user->createToken('tokenApi')->plainTextToken;
 
-        if ($user) {
-            if(Hash::check($senhaUsuario, $user->senhaUsuario)){
-                return response()->json(['status' => true,
-                'token' => $tokenApi, 
-                'message'=>'Login realizado com sucesso',
-                'data' => $user], 200);
-            }
-            else {
-                return response()->json(['message'=>'senha incorreta'], 401);
-            }
-        }else {
-            return response()->json(['message'=>'Usuário não encontrado'], 404);            
-        }
+        return response()->json([
+            'status'  => true,
+            'token'   => $tokenApi,
+            'message' => 'Login realizado com sucesso',
+            'data'    => $user
+        ], 200);
 
     }
 
@@ -123,7 +131,7 @@ class UsuariosController extends Controller
             return response()->json(['error' => 'Usuário não autenticado'], 401);
         }
         
-        $user->currentAccessToken()->delete();
+        $user->tokens()->delete();
         
         return response()->json(['status' => true,
         'message' => 'Loggout realizado com sucesso'], 200);

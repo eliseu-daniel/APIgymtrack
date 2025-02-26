@@ -102,7 +102,7 @@ class AntropometriaController extends Controller
             return response()->json(['error' => 'Paciente não encontrado'], 404);
         }
 
-        $antro->delete($id);
+        $antro->delete();
 
         return response()->json(['message' => 'Antropometria deletada com sucesso'], 200);
     }

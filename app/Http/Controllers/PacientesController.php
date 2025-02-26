@@ -71,11 +71,10 @@ class PacientesController extends Controller
             ->first();
 
         if (!$patient) {
-            return response()->json(['error' => 'Paciente não encontrado', 404]);
+            return response()->json(['error' => 'Paciente não encontrado'], 404);
         }
 
         $validated = $request->validate([
-            'idUsuario'            => 'required|int',
             'nomePaciente'         => 'required|string|max:100',
             'emailPaciente'        => 'required|string|email|unique:pacientes,emailPaciente,' . $id . ',idPaciente',
             'telefonePaciente'     => 'required|string|max:15',
