@@ -85,7 +85,7 @@ class TreinosController extends Controller
             return response()->json(['error' => 'Treino não encontrado'], 404);
         }
         
-        $validated = $request->validate([
+        $validated = $request->validate([ // adicionar os novos campos do banco
             'idPaciente'      => 'required|int',
             'idAntropometria' => 'required|int',
             'inicioTreino'    => 'required|date',
@@ -98,7 +98,7 @@ class TreinosController extends Controller
             'tempoDescanso'   => 'nullable|string',
             'diaSemana'       => 'nullable|string',
             'linksExecucao'   => 'nullable|string'
-        ]);
+        ]); 
 
         $workout->update($validated);
 

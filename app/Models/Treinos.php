@@ -24,6 +24,4 @@ class Treinos extends Model
         'diaSemana',
         'linksExecucao'
     ];
-
-    public $timestamps = false;
 }

@@ -10,8 +10,6 @@ class Dietas extends Model
 
     protected $primaryKey = 'idDieta';
 
-    public $timestamps = false;
-
     protected $fillable = [
         'idPaciente',
         'idAntropometria',

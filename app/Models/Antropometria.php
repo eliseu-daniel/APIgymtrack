@@ -10,7 +10,6 @@ class Antropometria extends Model
 
     protected $primaryKey = 'idAntropometria';
 
-    public $timestamps = false;
 
     protected $fillable = [
         'idPaciente',

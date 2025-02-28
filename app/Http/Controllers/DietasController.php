@@ -37,7 +37,8 @@ class DietasController extends Controller
             'inicioDieta'       => 'required|date',
             'horarioRefeicao'   => 'required|string|max:6',
             'tipoDieta'         => 'nullable|string|max:50',
-            'pesoAtual'         => 'nullable|numeric'
+            'pesoAtual'         => 'nullable|numeric',
+            'pesoMeta'         => 'nullable|numeric'
         ]);
 
         $diet = Dietas::create($validated);
@@ -81,7 +82,8 @@ class DietasController extends Controller
             'inicioDieta' => 'required|date',
             'horarioRefeicao' => 'required|string|max:6',
             'tipoDieta' => 'nullable|string|max:50',
-            'pesoAtual' => 'nullable|numeric'
+            'pesoAtual' => 'nullable|numeric',
+            'pesoMeta'  => 'nullable|numeric'
         ]);
         
         $diet->update($validated);

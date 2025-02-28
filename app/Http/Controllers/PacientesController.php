@@ -31,8 +31,8 @@ class PacientesController extends Controller
             'nascimentoPaciente'   => 'required|date',
             'planoAcompanhamento'  => 'required|string|max:100|in:mensal,trimestral,semestral',
             'inicioAcompanhamento' => 'nullable|date',
-            'sexoPaciente'         => 'string|in:F,M',
-            'pagamento'            => 'string',
+            'sexoPaciente'         => 'nullable|string|in:F,M',
+            'pagamento'            => 'nullable|string',
             'alergias'             => 'nullable|string|max:100'
         ]);
 
@@ -81,8 +81,8 @@ class PacientesController extends Controller
             'nascimentoPaciente'   => 'required|date',
             'planoAcompanhamento'  => 'required|string|max:100|in:mensal,trimestral,semestral',
             'inicioAcompanhamento' => 'nullable|date',
-            'sexoPaciente'         => 'string|in:F,M',
-            'pagamento'            => 'string',
+            'sexoPaciente'         => 'nullable|string|in:F,M',
+            'pagamento'            => 'nullable|string',
             'alergias'             => 'nullable|string|max:100'
         ]);
 

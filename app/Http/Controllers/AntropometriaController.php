@@ -27,7 +27,7 @@ class AntropometriaController extends Controller
     {
         $validated = $request->validate([
             'idPaciente'      => 'required|int',
-            'pesoInicial'     => 'required|numeric|min:0|max:300',
+            'pesoInicialPaciente'     => 'required|numeric|min:0|max:300',
             'altura'          => 'required|numeric|min:0|max:300',
             'gorduraCorporal' => 'required|numeric|min:0|max:300',
             'nivelAtvFisica'  => 'nullable|string|max:50',
@@ -73,7 +73,7 @@ class AntropometriaController extends Controller
 
         $validated = $request->validate([
             'idPaciente'      => 'required|int',
-            'pesoInicial'     => 'required|numeric|min:0|max:300',
+            'pesoInicialPaciente'     => 'required|numeric|min:0|max:300',
             'altura'          => 'required|numeric|min:0|max:300',
             'gorduraCorporal' => 'required|numeric|min:0|max:300',
             'nivelAtvFisica'  => 'nullable|string|max:50',
