@@ -20,7 +20,8 @@ class Antropometria extends Model
         'objetivo',
         'tmb',
         'getAntro',
-        'lesoes'
+        'lesoes',
+        'atualizacaoAntro'
     ];
 
 }

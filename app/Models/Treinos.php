@@ -16,12 +16,14 @@ class Treinos extends Model
         'inicioTreino',
         'tipoTreino',
         'grupoMuscular',
+        'nomeExercicio',
         'seriesTreino',
         'repeticoesTreino',
         'cargaInicial',
         'cargaAtual',
         'tempoDescanso',
         'diaSemana',
-        'linksExecucao'
+        'linksExecucao',
+        'atualizacaoTreino'
     ];
 }

@@ -12,10 +12,17 @@ class Dietas extends Model
 
     protected $fillable = [
         'idPaciente',
+        'refeicao',
+        'descricaoRefeicao',
+        'calorias',
+        'proteinas',
+        'carboidratos',
+        'gorduras',
         'idAntropometria',
         'inicioDieta',
         'horarioRefeicao',
         'tipoDieta',
-        'pesoAtual'
+        'pesoMeta',
+        'atualizacaoDieta'
     ];
 }
