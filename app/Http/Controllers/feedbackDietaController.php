@@ -4,14 +4,25 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 
-class feedbackDietaController extends Controller
+use App\Models\FeedbackDieta;
+
+class FeedbackDietaController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        //
+        $data = FeedbackDieta::join('pacientes', 'feedbackdieta.idPaciente', '=', 'pacientes.idPaciente')
+        ->join('dietas', 'feedbackdieta.idDieta', '=', 'dietas.idDieta')
+        ->select('dietas.*','pacientes.nomePaciente')
+        ->get();
+
+    if (!$data) {
+        return response()->json(['mesasge' => 'Dieta não encontrada'], 404);
+    }
+    
+    return response()->json($data, 200);
     }
 
     /**
@@ -19,7 +30,16 @@ class feedbackDietaController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $validated = validate([
+            'idDieta'           => 'required|int',
+            'idPaciente'        => 'required|int',
+            'comentario'        => 'nullable|string',
+            'dataFeedbackDieta' => 'nullable|date'
+        ]);
+
+        $diet = FeedbackDieta::create($validated);
+
+        return response()->json(['message' => 'Feedback criado com sucesso', 'data' => $diet], 201);
     }
 
     /**
@@ -34,7 +54,6 @@ class feedbackDietaController extends Controller
         WHERE d.idPaciente = 10
         ORDER BY d.inicioDieta;
         */
-
     }
 
     /**
@@ -50,6 +69,14 @@ class feedbackDietaController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        $diet = FeedbackDieta::where($id)->first();
+
+        if (!$diet) {
+            return response()->json(['message' => 'Feedback não encontrado'], 404);
+        }
+
+        $diet->delete();
+
+        return response()->json(['mesage' => 'Feedback apagado com sucesso'], 200);
     }
 }

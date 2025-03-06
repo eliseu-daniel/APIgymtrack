@@ -33,11 +33,16 @@ class DietasController extends Controller
     {
         $validated = $request->validate([
             'idPaciente'        => 'required|int',
+            'refeicao'          => 'required|string',
+            'descricaoRefeicao' => 'required|string',
+            'calorias'          => 'required|numeric',
+            'proteinas'         => 'required|numeric',
+            'carboidratos'      => 'required|numeric',
+            'gorduras'          => 'required|numeric',
             'idAntropometria'   => 'required|int',
             'inicioDieta'       => 'required|date',
             'horarioRefeicao'   => 'required|string|max:6',
             'tipoDieta'         => 'nullable|string|max:50',
-            'pesoAtual'         => 'nullable|numeric',
             'pesoMeta'         => 'nullable|numeric'
         ]);
 
@@ -77,13 +82,18 @@ class DietasController extends Controller
         }
         
         $validated = $request->validate([
-            'idPaciente' => 'required|int',
-            'idAntropometria' => 'required|int',
-            'inicioDieta' => 'required|date',
-            'horarioRefeicao' => 'required|string|max:6',
-            'tipoDieta' => 'nullable|string|max:50',
-            'pesoAtual' => 'nullable|numeric',
-            'pesoMeta'  => 'nullable|numeric'
+            'idPaciente'        => 'required|int',
+            'refeicao'          => 'required|string',
+            'descricaoRefeicao' => 'required|string',
+            'calorias'          => 'required|numeric',
+            'proteinas'         => 'required|numeric',
+            'carboidratos'      => 'required|numeric',
+            'gorduras'          => 'required|numeric',
+            'idAntropometria'   => 'required|int',
+            'inicioDieta'       => 'required|date',
+            'horarioRefeicao'   => 'required|string|max:6',
+            'tipoDieta'         => 'nullable|string|max:50',
+            'pesoMeta'         => 'nullable|numeric'
         ]);
         
         $diet->update($validated);
