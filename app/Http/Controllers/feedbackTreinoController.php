@@ -27,12 +27,7 @@ class FeedbackTreinoController extends Controller
      */
     public function show(string $id)
     {
-        /*
-        SELECT t.inicioTreino, t.nomeExercicio, t.cargaInicial, t.cargaAtual, t.repeticoesTreino
-        FROM treinos t
-        WHERE t.idPaciente = 10
-        ORDER BY t.inicioTreino;
-        */
+
     }
 
     /**
