@@ -123,7 +123,7 @@ class UsuariosController extends Controller
 
     }
 
-    public function loggout(Request $request)
+    public function logout(Request $request)
     {
         $user = Auth::user();
 
@@ -134,7 +134,7 @@ class UsuariosController extends Controller
         $user->tokens()->delete();
         
         return response()->json(['status' => true,
-        'message' => 'Loggout realizado com sucesso'], 200);
+        'message' => 'Logout realizado com sucesso'], 200);
 
     }
 }

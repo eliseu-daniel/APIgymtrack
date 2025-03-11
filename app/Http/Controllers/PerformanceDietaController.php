@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 
+use App\Models\Treinos;
+
 class PerformanceDietaController extends Controller
 {
     /**
@@ -27,13 +29,13 @@ class PerformanceDietaController extends Controller
      */
     public function show(string $id)
     {
-                /*
-        SELECT d.inicioDieta, a.pesoInicial, d.pesoAtual 
-        FROM dietas d
-        JOIN antropometria a ON d.idPaciente = a.idPaciente
-        WHERE d.idPaciente = 10
-        ORDER BY d.inicioDieta;
-        */
+        $performance = Dietas::join('antropometria', 'dietas.idPaciente', '=', 'antropometria.idPaciente')
+            ->select('dietas.inicioDieta', 'antropometria.pesoInicial', 'dietas.pesoAtual')
+            ->where('dietas.idPaciente', '=', $id)
+            ->orderBy('dietas.inicioDieta')
+            ->get();
+
+        return response()->json(['data' => $performance], 200);
     }
 
     /**
