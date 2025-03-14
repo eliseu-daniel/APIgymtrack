@@ -9,6 +9,8 @@ use App\Http\Controllers\{
     PacientesController,
     TreinosController,
     UsuariosController,
+    PerformanceDietaController,
+    PerformanceTreinoController
 };
 
 Route::post('login', [UsuariosController::class, 'verifyPw']);
