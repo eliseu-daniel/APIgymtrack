@@ -28,12 +28,13 @@ class PerformanceTreinoController extends Controller
      */
     public function show(string $id)
     {
-        /*
-        SELECT t.inicioTreino, t.nomeExercicio, t.cargaInicial, t.cargaAtual, t.repeticoesTreino
-        FROM treinos t
-        WHERE t.idPaciente = 10
-        ORDER BY t.inicioTreino;
-        */
+        $performance = Treinos::join('Pacientes', 'treinos.idPaciente', '=', 'Pacientes.idPaciente')
+        ->select('treinos.cargaInicial', 'Pacientes.nomePaciente', 'treinos.cargaAtual')
+        ->where('treinos.idPaciente', '=', $id)
+        ->orderBy('treinos.inicioTreino')
+        ->get();
+
+        return response()->json(['data' => $performance], 200);
     }
 
     /**
