@@ -1,19 +1,18 @@
-version: '3.8'
+version: '3.9'
 
 services:
   mysql:
-    image: mysql:5.7
-    container_name: mysql_db
-    restart: unless-stopped
+    image: mysql:8.0
+    container_name: mysql_container
     environment:
-      MYSQL_ROOT_PASSWORD: rootpassword
-      MYSQL_DATABASE: gymtrack
-      MYSQL_USER: laraveluser
-      MYSQL_PASSWORD: laravelpass
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
     ports:
-      - "3306:3306"
+      - "${DB_PORT}:3306"
     volumes:
-      - mysql_data:/var/lib/mysql
+      - db_data:/var/lib/mysql
 
 volumes:
-  mysql_data:
+  db_data:
