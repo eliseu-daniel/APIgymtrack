@@ -1,39 +1,80 @@
-⚙️ Variáveis de Ambiente (.env)
+⚙️ Configuração de Variáveis de Ambiente
 
-Troque o nome do arquivo .env.example para .env
-Troque o nome das variaveis a seguir para os seus dados de conexao
+1. Copie o arquivo de exemplo .env.example para .env:
 ```
-DB_HOST=localhost
-DB_USER=seuUser
+cp .env.example .env
+```
+2. Edite o arquivo .env com suas credenciais de banco de dados. Use as seguintes configurações para se conectar ao MySQL rodando em Docker:
+```
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=gymtrack
+DB_USERNAME=seuUser
 DB_PASSWORD=suaSenha
-DB_NAME=gymtrack
 ```
 
-📦 Como subir o ambiente
+🐳 Subir o MySQL com Docker
 
-No terminal, execute:
-
+Execute o comando abaixo para iniciar apenas o container do MySQL:
 ```
 docker-compose up -d
 ```
 
-✅ Verificar se o container está rodando
+🔑 Gerar Chave da Aplicação Laravel
 
+Com o Laravel rodando localmente, gere a chave da aplicação:
 ```
-docker ps
-```
-
-🛠 Acessar o MySQL via terminal
-
-```
-docker exec -it mysql_container mysql -u ${DB_USER} -p
+php artisan key:generate
 ```
 
-🧹 Parar e remover containers
+🚀 Rodar as Migrations
+
+Com o banco MySQL rodando e a conexão configurada, rode as migrations para criar as tabelas necessárias:
+```
+php artisan migrate
+```
+
+⚙️ Limpar e Cachear Configurações do Laravel
+
+Após mudanças no .env, é recomendado limpar o cache de configuração para evitar problemas:
+```
+php artisan config:clear
+php artisan cache:clear
+php artisan config:cache
+```
+
+🎯 Gerar Model e Controller RESTful com Artisan
+
+Criar uma Model com a migration associada:
+```
+php artisan make:model NomeModel -m
+```
+
+Criar uma Controller com métodos RESTful:
+```
+php artisan make:controller NomeController --resource
+```
+
+🐞 Verificar Logs de Erro
+
+Se a aplicação apresentar erros ou problemas na conexão, confira os logs para diagnosticar:
+
+ - Logs do Laravel:
+ 
+      storage/logs/laravel.log
+ - Logs do container MySQL:
+```
+   docker logs mysql_container
+```
+
+🧹 Parar e Remover o Container do MySQL
+
+Para parar o container:
 ```
 docker-compose down
 ```
-ou para apagar tudo
+Para remover volumes e imagens associadas:
 ```
 docker-compose down -v --rmi all --remove-orphans
 ```
