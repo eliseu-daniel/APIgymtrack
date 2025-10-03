@@ -13,6 +13,14 @@ return new class extends Migration
     {
         Schema::create('anthropometries', function (Blueprint $table) {
             $table->id();
+            $table->num('weights_initial')->nullable();
+            $table->num('height')->nullable();
+            $table->num('body_fat')->nullable();
+            $table->num('body_muscle')->nullable();
+            $table->enum('physical_activity_level', ['light, moderate, vigorous'])->nullable();
+            $table->num('TMB')->nullable();
+            $table->num('GET')->nullable();
+            $table->text('lesions')->nullable();
             $table->timestamps();
         });
     }

@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('workout_types', function (Blueprint $table) {
             $table->id();
+            $table->string('workout_type');
             $table->timestamps();
         });
     }

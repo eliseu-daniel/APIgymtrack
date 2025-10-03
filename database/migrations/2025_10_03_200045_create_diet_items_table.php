@@ -11,12 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('educators', function (Blueprint $table) {
+        Schema::create('diet_items', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->string('email')->unique();
-            $table->string('password');
-            $table->string('phone');
+            $table->foreignId('food_id')->constrained('food')->onDelete('cascade');
+            $table->enum('measure', ['und', 'gr', 'ml', 'l']);
+            $table->string('others')->nullable();
+            $table->boolean('send_notification')->default(false);
             $table->boolean('is_active')->default(true);
             $table->timestamps();
         });
@@ -27,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('educators');
+        Schema::dropIfExists('diet_items');
     }
 };

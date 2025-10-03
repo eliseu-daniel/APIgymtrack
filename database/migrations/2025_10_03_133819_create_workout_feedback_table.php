@@ -13,6 +13,9 @@ return new class extends Migration
     {
         Schema::create('workout_feedback', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('workout_item_id')->constrained('workout_items')->onDelete('cascade');
+            $table->text('comment');
+            $table->boolean('send_notification')->default(false);
             $table->timestamps();
         });
     }

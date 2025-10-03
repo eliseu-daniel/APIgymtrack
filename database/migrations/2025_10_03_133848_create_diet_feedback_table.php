@@ -13,6 +13,9 @@ return new class extends Migration
     {
         Schema::create('diet_feedback', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('diet_item_id')->constrained('diet_items')->onDelete('cascade');
+            $table->text('comment');
+            $table->boolean('send_notification')->default(false);
             $table->timestamps();
         });
     }
