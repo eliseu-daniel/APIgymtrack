@@ -16,11 +16,11 @@ return new class extends Migration
             $table->foreignId('workout_id')->constrained('workouts')->onDelete('cascade');
             $table->foreignId('exercise_id')->constrained('exercises')->onDelete('cascade');
             $table->string('day_of_week');
-            $table->num('series');
-            $table->num('repetitions');
-            $table->num('weight_load')->nullable();
-            $table->num('duration_time')->nullable();
-            $table->num('rest_time')->nullable();
+            $table->integer('series');
+            $table->integer('repetitions');
+            $table->integer('weight_load')->nullable();
+            $table->integer('duration_time')->nullable();
+            $table->integer('rest_time')->nullable();
             $table->boolean('send_notification')->default(false);
             $table->boolean('is_active')->default(true);
             $table->timestamps();

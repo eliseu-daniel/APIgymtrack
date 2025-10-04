@@ -19,10 +19,10 @@ return new class extends Migration
             $table->string('diet_type')->nullable();
             $table->string('goal_weight')->nullable();
             $table->string('objective')->nullable();
-            $table->num('calories');
-            $table->num('proteins');
-            $table->num('carbohydrates');
-            $table->num('fats');
+            $table->integer('calories');
+            $table->integer('proteins');
+            $table->integer('carbohydrates');
+            $table->integer('fats');
             $table->date('start_date');
             $table->date('end_date');
             $table->date('finalized_at');           
