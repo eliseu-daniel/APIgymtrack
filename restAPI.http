@@ -1,0 +1,11 @@
+GET https://127.0.0.1:8000/api/diet
+
+
+###
+POST https://127.0.0.1:8000/api/diet
+content-type: application/json
+
+{
+    "name": "sample",
+    "time": "Wed, 21 Oct 2015 18:27:50 GMT"
+}
