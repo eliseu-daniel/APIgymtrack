@@ -26,8 +26,5 @@ class Educator extends Model
         'password'
     ];
 
-    public function setSenhaUsuarioAttribute($value)
-    {
-        $this->attributes['senhaUsuario'] = bcrypt($value);
-    }
+   
 }

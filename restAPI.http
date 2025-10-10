@@ -23,4 +23,4 @@ Accept: application/json
 
 ###
 GET http://127.0.0.1:8000/api/diets
-Authorization: Bearer seu_token_aqui
+Authorization: Bearer 1|sqFA4FmbvJr4jAf03Yq2LBG1l9WyQSRFrkv4SNC460a936fd

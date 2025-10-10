@@ -1,85 +1,61 @@
-⚙️ Configuração de Variáveis de Ambiente
+<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
 
-1. Copie o arquivo de exemplo .env.example para .env:
-```
-cp .env.example .env
-```
-2. Edite o arquivo .env com suas credenciais de banco de dados. Use as seguintes configurações para se conectar ao MySQL rodando em Docker:
-```
-DB_CONNECTION=mysql
-DB_HOST=127.0.0.1
-DB_PORT=3306
-DB_DATABASE=gymtrack
-DB_USERNAME=seuUser
-DB_PASSWORD=suaSenha
-```
+<p align="center">
+<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
+<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
+<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
+<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
+</p>
 
-🐳 Subir o MySQL com Docker
+## About Laravel
 
-Execute o comando abaixo para iniciar apenas o container do MySQL:
-```
-docker-compose up -d
-```
+Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
 
-🔑 Gerar Chave da Aplicação Laravel
+- [Simple, fast routing engine](https://laravel.com/docs/routing).
+- [Powerful dependency injection container](https://laravel.com/docs/container).
+- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
+- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
+- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
+- [Robust background job processing](https://laravel.com/docs/queues).
+- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
 
-Com o Laravel rodando localmente, gere a chave da aplicação:
-```
-php artisan key:generate
-```
+Laravel is accessible, powerful, and provides tools required for large, robust applications.
 
-🚀 Rodar as Migrations
+## Learning Laravel
 
-Com o banco MySQL rodando e a conexão configurada, rode as migrations para criar as tabelas necessárias:
-```
-php artisan migrate
-```
+Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
 
-Rodar a aplicação
-```
-php artisan server
-```
+You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
 
-⚙️ Limpar e Cachear Configurações do Laravel
+If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
 
-Após mudanças no .env, é recomendado limpar o cache de configuração para evitar problemas:
-```
-php artisan config:clear
-php artisan cache:clear
-php artisan config:cache
-```
+## Laravel Sponsors
 
-🎯 Gerar Model e Controller RESTful com Artisan
+We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
 
-Criar uma Model com a migration associada:
-```
-php artisan make:model NomeModel -m
-```
+### Premium Partners
 
-Criar uma Controller com métodos RESTful:
-```
-php artisan make:controller NomeController --resource
-```
+- **[Vehikl](https://vehikl.com)**
+- **[Tighten Co.](https://tighten.co)**
+- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
+- **[64 Robots](https://64robots.com)**
+- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
+- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
+- **[Redberry](https://redberry.international/laravel-development)**
+- **[Active Logic](https://activelogic.com)**
 
-🐞 Verificar Logs de Erro
+## Contributing
 
-Se a aplicação apresentar erros ou problemas na conexão, confira os logs para diagnosticar:
+Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
 
- - Logs do Laravel:
- 
-      storage/logs/laravel.log
- - Logs do container MySQL:
-```
-   docker logs mysql_container
-```
+## Code of Conduct
 
-🧹 Parar e Remover o Container do MySQL
+In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
 
-Para parar o container:
-```
-docker-compose down
-```
-Para remover volumes e imagens associadas:
-```
-docker-compose down -v --rmi all --remove-orphans
-```
+## Security Vulnerabilities
+
+If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+
+## License
+
+The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).

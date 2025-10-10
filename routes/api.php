@@ -1,34 +1,35 @@
 <?php
 
-use App\Http\Controllers\AdministratorController;
-use App\Http\Controllers\AnthropometryController;
-use App\Http\Controllers\AuthenticateController;
-use App\Http\Controllers\DietController;
-use App\Http\Controllers\DietFeedbackController;
-use App\Http\Controllers\DietFeedbackNotificationController;
-use App\Http\Controllers\DietItemController;
-use App\Http\Controllers\DietNotificationController;
-use App\Http\Controllers\EducatorController;
-use App\Http\Controllers\ExerciseController;
-use App\Http\Controllers\FoodController;
-use App\Http\Controllers\MealController;
-use App\Http\Controllers\MuscleGroupController;
-use App\Http\Controllers\PatientController;
-use App\Http\Controllers\PatientRegistrationController;
-use App\Http\Controllers\PatientWeightController;
-use App\Http\Controllers\ProgressChartController;
-use App\Http\Controllers\WorkoutController;
-use App\Http\Controllers\WorkoutFeedbackNotificationController;
-use App\Http\Controllers\WorkoutItemController;
-use App\Http\Controllers\WorkoutNotificationController;
-use App\Http\Controllers\WorkoutTypeController;
-use Illuminate\Http\Request;
+use App\Http\Controllers\{
+    AdministratorController,
+    AnthropometryController,
+    AuthenticateController,
+    DietController,
+    DietFeedbackController,
+    DietFeedbackNotificationController,
+    DietItemController,
+    DietNotificationController,
+    EducatorController,
+    ExerciseController,
+    FoodController,
+    MealController,
+    MuscleGroupController,
+    PatientController,
+    PatientRegistrationController,
+    PatientWeightController,
+    ProgressChartController,
+    WorkoutController,
+    WorkoutFeedbackNotificationController,
+    WorkoutItemController,
+    WorkoutNotificationController,
+    WorkoutTypeController,
+};
 use Illuminate\Support\Facades\Route;
 
-Route::post('/register', [AuthenticateController::class, 'register']);
-Route::post('/api/login', [AuthenticateController::class, 'login']);
+Route::post('/register', [AuthenticateController::class, 'register'])->name('register');
+Route::post('/login', [AuthenticateController::class, 'login']);
 
-Route::prefix('api')->middleware('auth:sanctum')->group(function (){
+Route::middleware('auth:sanctum')->group(function (){
     Route::post('logout', [AuthenticateController::class, 'logout']);
     
     Route::apiResource('diets', DietController::class);

@@ -46,7 +46,7 @@ class AuthenticateController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:educator',
+            'email' => 'required|email|unique:educators',
             'phone' => 'required|string|max:20',
             'password' => 'required|string|min:6|confirmed',
         ]);
@@ -60,8 +60,9 @@ class AuthenticateController extends Controller
         ]);
 
         return response()->json([
-            'token' => $educator->createToken('api-token')->plainTextToken,
-            'educator' => $educator,
+            // 'token' => $educator->createToken('api-token')->plainTextToken,
+            'message' => 'Educador cadastrado com sucesso',
+            'data' => $educator,
         ], 201);
     }
 
