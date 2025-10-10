@@ -1,12 +1,26 @@
-GET http://127.0.0.1:8000/api/diets
-Authorization: Bearer seu_token_aqui
-
-
-###
-POST http://127.0.0.1:8000/api/diet
-content-type: application/json
+### 
+POST http://127.0.0.1:8000/api/register
+Content-Type: application/json
+Accept: application/json
 
 {
-    "name": "sample",
-    "time": "Wed, 21 Oct 2015 18:27:50 GMT"
+  "name": "teste",
+  "email": "teste@gmail.com",
+  "password": "senha123",
+  "phone": "11999999999",
+  "password_confirmation": "senha123"
 }
+
+###
+POST http://127.0.0.1:8000/api/login
+Content-Type: application/json
+Accept: application/json
+
+{
+  "email": "teste@gmail.com",
+  "password": "senha123"
+}
+
+###
+GET http://127.0.0.1:8000/api/diets
+Authorization: Bearer seu_token_aqui

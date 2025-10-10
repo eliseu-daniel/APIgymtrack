@@ -36,9 +36,10 @@ class AuthenticateController extends Controller
         }
 
         return response()->json([
+            'status' => true,
             'token' => $educator->createToken('api-token')->plainTextToken,
             'educator' => $educator,
-        ]);
+        ], 200);
     }
 
     public function register(Request $request)
@@ -61,13 +62,13 @@ class AuthenticateController extends Controller
         return response()->json([
             'token' => $educator->createToken('api-token')->plainTextToken,
             'educator' => $educator,
-        ]);
+        ], 201);
     }
 
     public function logout(Request $request)
     {
         $request->user()->currentAccessToken()->delete();
 
-        return response()->json(['message' => 'Logout realizado com sucesso']);
+        return response()->json(['message' => 'Logout realizado com sucesso'], 200);
     }
 }
