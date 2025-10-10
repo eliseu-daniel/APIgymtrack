@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Diet;
 use Illuminate\Http\Request;
 
 class DietController extends Controller
@@ -12,7 +13,9 @@ class DietController extends Controller
     public function index()
     {
         //
-        
+        $diet = Diet::all();
+
+        return response()->json(['dietAll' => $diet], 200);
     }
 
     /**
