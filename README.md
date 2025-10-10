@@ -35,6 +35,11 @@ Com o banco MySQL rodando e a conexão configurada, rode as migrations para cria
 php artisan migrate
 ```
 
+Rodar a aplicação
+```
+php artisan server
+```
+
 ⚙️ Limpar e Cachear Configurações do Laravel
 
 Após mudanças no .env, é recomendado limpar o cache de configuração para evitar problemas:
