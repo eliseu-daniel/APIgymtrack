@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AdministratorController;
 use App\Http\Controllers\AnthropometryController;
+use App\Http\Controllers\AuthenticateController;
 use App\Http\Controllers\DietController;
 use App\Http\Controllers\DietFeedbackController;
 use App\Http\Controllers\DietFeedbackNotificationController;
@@ -24,7 +25,12 @@ use App\Http\Controllers\WorkoutTypeController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
+Route::post('/api/register', [AuthenticateController::class, 'register']);
+Route::post('/api/login', [AuthenticateController::class, 'login']);
+
 Route::prefix('api')->middleware('auth:sanctum')->group(function (){
+    Route::post('/logout', [AuthenticateController::class, 'logout']);
+    
     Route::apiResource('diets', DietController::class);
     Route::apiResource('administrators', AdministratorController::class);
     Route::apiResource('anthropometrys', AnthropometryController::class);
