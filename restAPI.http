@@ -1,8 +1,9 @@
-GET https://127.0.0.1:8000/api/diet
+GET http://127.0.0.1:8000/api/diets
+Authorization: Bearer seu_token_aqui
 
 
 ###
-POST https://127.0.0.1:8000/api/diet
+POST http://127.0.0.1:8000/api/diet
 content-type: application/json
 
 {
