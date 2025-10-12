@@ -48,7 +48,7 @@ class AuthenticateController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:educators',
             'phone' => 'required|string|max:20',
-            'password' => 'required|string|min:6|confirmed',
+            'password' => 'required|string|min:6',
         ]);
 
         $educator = Educator::create([

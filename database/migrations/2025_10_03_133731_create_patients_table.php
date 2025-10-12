@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->string('phone');
             $table->date('birth_date')->nullable();
-            $table->enum('gender', ['male, female, other'])->nullable();
+            $table->enum('gender', ['male', 'female', 'other'])->nullable();
             $table->text('allergies')->nullable();
             $table->boolean('is_active')->default(true);
             $table->timestamps('');
