@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Anthropometry;
 use Illuminate\Http\Request;
 
 class AnthropometryController extends Controller
@@ -11,7 +12,7 @@ class AnthropometryController extends Controller
      */
     public function index()
     {
-        //
+        return response()->json(['satus' => true,'data' => Anthropometry::all()], 200);
     }
 
     /**
@@ -27,7 +28,18 @@ class AnthropometryController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $anthopometry = $request->validate([
+            'weights_initial'           => 'required|decimal:0,2',
+            'height'                    => 'required|decimal:0,2',
+            'body_fat'                  => 'required|decimal:0,2',
+            'body_muscle'               => 'required|decimal:0,2',
+            'physical_activity_level'   => 'required|in:light,moderate,vigorous',
+            'TMB'                       => 'required|integer',
+            'GET'                       => 'required|integer',
+            'lesions'                   => 'nullable|string',
+        ]);
+        $anthopometry = Anthropometry::create($anthopometry);
+        return response()->json(['status' => true, 'data' => $anthopometry], 201);
     }
 
     /**
@@ -51,7 +63,22 @@ class AnthropometryController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        $anthopometry = Anthropometry::find($id);
+        if (!$anthopometry) {
+            return response()->json(['status' => false, 'message' => 'Anthropometry not found'], 404);
+        }
+        $data = $request->validate([
+            'weights_initial'           => 'sometimes|decimal:0,2',
+            'height'                    => 'sometimes|decimal:0,2',
+            'body_fat'                  => 'sometimes|decimal:0,2',
+            'body_muscle'               => 'sometimes|decimal:0,2',
+            'physical_activity_level'   => 'sometimes|in:light,moderate,vigorous',
+            'TMB'                       => 'sometimes|integer',
+            'GET'                       => 'sometimes|integer',
+            'lesions'                   => 'nullable|string',
+        ]);
+        $anthopometry->update($data);
+        return response()->json(['status' => true, 'data' => $anthopometry], 200);
     }
 
     /**
@@ -59,6 +86,6 @@ class AnthropometryController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        
     }
 }

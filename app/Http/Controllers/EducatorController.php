@@ -14,7 +14,7 @@ class EducatorController extends Controller
     public function index()
     {
         //
-        $educator = Educator::select('name', 'email', 'phone', 'is_active')->get();
+        $educator = Educator::all();
         return response()->json(['status' => true, "data"=> $educator], 200);
     }
 

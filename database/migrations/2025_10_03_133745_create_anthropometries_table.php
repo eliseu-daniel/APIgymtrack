@@ -17,7 +17,7 @@ return new class extends Migration
             $table->integer('height')->nullable();
             $table->integer('body_fat')->nullable();
             $table->integer('body_muscle')->nullable();
-            $table->enum('physical_activity_level', ['light, moderate, vigorous'])->nullable();
+            $table->enum('physical_activity_level', ['light', 'moderate', 'vigorous'])->nullable();
             $table->integer('TMB')->nullable();
             $table->integer('GET')->nullable();
             $table->text('lesions')->nullable();
