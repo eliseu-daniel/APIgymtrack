@@ -12,7 +12,7 @@ class AnthropometryController extends Controller
      */
     public function index()
     {
-        return response()->json(['satus' => true,'data' => Anthropometry::all()], 200);
+        return response()->json(['satus' => true, 'data' => Anthropometry::all()], 200);
     }
 
     /**
@@ -29,6 +29,7 @@ class AnthropometryController extends Controller
     public function store(Request $request)
     {
         $anthopometry = $request->validate([
+            'patient_id'                => 'request|patients,id',
             'weights_initial'           => 'required|decimal:0,2',
             'height'                    => 'required|decimal:0,2',
             'body_fat'                  => 'required|decimal:0,2',
@@ -67,7 +68,9 @@ class AnthropometryController extends Controller
         if (!$anthopometry) {
             return response()->json(['status' => false, 'message' => 'Anthropometry not found'], 404);
         }
+
         $data = $request->validate([
+            'patient_id'                => 'request|patients,id',
             'weights_initial'           => 'sometimes|decimal:0,2',
             'height'                    => 'sometimes|decimal:0,2',
             'body_fat'                  => 'sometimes|decimal:0,2',
@@ -77,6 +80,7 @@ class AnthropometryController extends Controller
             'GET'                       => 'sometimes|integer',
             'lesions'                   => 'nullable|string',
         ]);
+
         $anthopometry->update($data);
         return response()->json(['status' => true, 'data' => $anthopometry], 200);
     }
@@ -86,6 +90,12 @@ class AnthropometryController extends Controller
      */
     public function destroy(string $id)
     {
-        
+        $anthopometry = Anthropometry::find($id);
+        if (!$anthopometry) {
+            return response()->json(['status' => false, 'message' => 'Antropometria não encontrada'], 404);
+        }
+
+        $anthopometry->update(['is_active' => false]);
+        return response()->json(['status' => true, 'message' => 'Antropometria desativada com sucesso'], 200);
     }
 }

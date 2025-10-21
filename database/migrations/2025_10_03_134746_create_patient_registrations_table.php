@@ -15,11 +15,10 @@ return new class extends Migration
             $table->id();
             $table->foreignId('patient_id')->constrained('patients')->onDelete('cascade');
             $table->foreignId('educator_id')->constrained('educators')->onDelete('cascade');
-            $table->foreignId('anthropometry_id')->nullable()->constrained('anthropometries')->onDelete('set null');
             $table->enum('plan_description', ['monthly', 'quarterly', 'semiannual'])->nullable();
             $table->date('start_date')->nullable();
             $table->date('end_date')->nullable();
-            $table->date('finalized_at')->nullable();   
+            $table->date('finalized_at')->nullable();
             $table->timestamps();
         });
     }

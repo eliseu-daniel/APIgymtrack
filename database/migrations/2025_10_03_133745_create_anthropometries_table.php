@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('anthropometries', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('patient_id')->constrained('patients')->onDelete('cascade');
             $table->integer('weights_initial')->nullable();
             $table->integer('height')->nullable();
             $table->integer('body_fat')->nullable();
@@ -21,6 +22,7 @@ return new class extends Migration
             $table->integer('TMB')->nullable();
             $table->integer('GET')->nullable();
             $table->text('lesions')->nullable();
+            $table->boolean('is_active')->default(true);
             $table->timestamps();
         });
     }

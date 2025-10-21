@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Anthropometry extends Model
 {
     protected $fillable = [
+        'patient_id',
         'weights_initial',
         'height',
         'body_fat',
@@ -15,5 +16,6 @@ class Anthropometry extends Model
         'TMB',
         'GET',
         'lesions',
+        'is_active',
     ];
 }

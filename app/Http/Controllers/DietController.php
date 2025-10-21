@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\CreateDietRequest;
 use App\Models\Diet;
 use Illuminate\Http\Request;
 
@@ -29,9 +30,11 @@ class DietController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(CreateDietRequest $request)
     {
-        //
+        $request->validated();
+        $diet = Diet::create();
+        return response()->json(['status' => true, 'message' => 'Dieta criada com sucesso', 'data' => $diet], 201);
     }
 
     /**
@@ -64,5 +67,13 @@ class DietController extends Controller
     public function destroy(string $id)
     {
         //
+    }
+
+    public function finishDiet(Request $request)
+    {
+        $dateInit = $request->start_date;
+        $dateFinish = $dateInit + 30;
+
+        return $dateFinish;
     }
 }
