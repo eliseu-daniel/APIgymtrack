@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('patient_weights', function (Blueprint $table) {
             $table->id();
+            $table->string('weight');
             $table->foreignId('patient_id')->constrained('patients')->onDelete('cascade');
             $table->date('current_date');
             $table->timestamps();

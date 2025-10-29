@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\CreatePatientWeightRequest;
+use App\Models\PatientWeight;
 use Illuminate\Http\Request;
 
 class PatientWeightController extends Controller
@@ -25,9 +27,12 @@ class PatientWeightController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(CreatePatientWeightRequest $request)
     {
-        //
+
+        $validated = $request->validated();
+        $weight = PatientWeight::create($validated);
+        return response()->json(['status' => true, 'message' => 'Peso do paciente criado com sucesso', 'data' => $weight], 201);
     }
 
     /**
@@ -43,15 +48,18 @@ class PatientWeightController extends Controller
      */
     public function edit(string $id)
     {
-        //
+        $weight = PatientWeight::find($id);
+        return response()->json(['status' => true, 'data' => $weight], 200);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(CreatePatientWeightRequest $request, string $id)
     {
-        //
+        $validated = $request->validated();
+        $weight = PatientWeight::where('id', $id)->update($validated);
+        return response()->json(['status' => true, 'message' => 'Peso do paciente atualizado com sucesso', 'data' => $weight], 200);
     }
 
     /**
