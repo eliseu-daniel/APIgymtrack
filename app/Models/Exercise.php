@@ -6,5 +6,9 @@ use Illuminate\Database\Eloquent\Model;
 
 class Exercise extends Model
 {
-    //
+    protected $fillable = [
+        'muscle_group_id',
+        'exercise',
+        'link_exercise'
+    ];
 }
