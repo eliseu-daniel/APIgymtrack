@@ -22,7 +22,29 @@ class CreateAnthropometryRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'patient_id'                => 'request|patients,id',
+            'weights_initial'           => 'required|decimal:0,2',
+            'height'                    => 'required|decimal:0,2',
+            'body_fat'                  => 'required|decimal:0,2',
+            'body_muscle'               => 'required|decimal:0,2',
+            'physical_activity_level'   => 'required|in:light,moderate,vigorous',
+            'TMB'                       => 'required|integer',
+            'GET'                       => 'required|integer',
+            'lesions'                   => 'nullable|string',
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'patient_id.request' => 'O campo paciente é obrigatório.',
+            'weights_initial.required' => 'O campo peso inicial é obrigatório.',
+            'height.required' => 'O campo altura é obrigatório.',
+            'body_fat.required' => 'O campo gordura corporal é obrigatório.',
+            'body_muscle.required' => 'O campo massa muscular é obrigatório.',
+            'physical_activity_level.required' => 'O campo nível de atividade física é obrigatório.',
+            'TMB.required' => 'O campo TMB é obrigatório.',
+            'GET.required' => 'O campo GET é obrigatório.',
         ];
     }
 }

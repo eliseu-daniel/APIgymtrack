@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('diet_items', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('diet_id')->constrained('diets')->onDelete('cascade');
             $table->foreignId('food_id')->constrained('food')->onDelete('cascade');
             $table->enum('measure', ['und', 'gr', 'ml', 'l']);
             $table->string('others')->nullable();

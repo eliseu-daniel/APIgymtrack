@@ -13,7 +13,8 @@ class PatientWeightController extends Controller
      */
     public function index()
     {
-        //
+        $weight = PatientWeight::all();
+        return response()->json(['status' => true, 'weightAll' => $weight], 200);
     }
 
     /**

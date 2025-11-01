@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\CreateAdministratorRequest;
 use App\Models\Administrator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -13,7 +14,7 @@ class AdministratorController extends Controller
      */
     public function index()
     {
-        return response()->json(['status' => true,'AdministratorsData' => Administrator::all()], 200);
+        return response()->json(['status' => true, 'AdministratorsData' => Administrator::all()], 200);
     }
 
     /**
@@ -27,27 +28,15 @@ class AdministratorController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(CreateAdministratorRequest $request)
     {
-        $adm = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:administrators',
-            'password' => 'required|string|min:8',
-            'phone' => 'required|string|max:15',
-            'is_active' => 'sometimes|boolean',
-            'is_admin' => 'sometimes|boolean',
-        ]);
+        $validator = $request->validate();
 
-        $adm = Administrator::create([
-            'name' => $request->name,
-            'email' => $request->email,
+        $adm = Administrator::create($validator, [
             'password' => Hash::make($request->password),
-            'phone' => $request->phone,
-            'is_active' => $request->is_active ?? true,
-            'is_admin' => $request->is_admin ?? false
         ]);
 
-        return response()->json(['status' => true,'message' => 'Administrador criado com sucesso', 'Data' => $adm], 201);
+        return response()->json(['status' => true, 'message' => 'Administrador criado com sucesso', 'Data' => $adm], 201);
     }
 
     /**
@@ -57,9 +46,9 @@ class AdministratorController extends Controller
     {
         $adm = Administrator::find($id);
         if (!$adm) {
-            return response()->json(['status' => false,'message' => 'Administrador não encontrado'], 404);
+            return response()->json(['status' => false, 'message' => 'Administrador não encontrado'], 404);
         }
-        return response()->json(['status' => true,'Data' => $adm], 200);
+        return response()->json(['status' => true, 'Data' => $adm], 200);
     }
 
     /**
@@ -73,29 +62,15 @@ class AdministratorController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(CreateAdministratorRequest $request, string $id)
     {
-        $adm = Administrator::find($id);
-        if (!$adm) {
-            return response()->json(['status' => false,'message' => 'Administrador não encontrado'], 404);
-        }
+        $validator = $request->validate();
 
-        $data = $request->validate([
-            'name' => 'sometimes|string|max:255',
-            'email' => 'sometimes|string|email|max:255|unique:administrators,email,' . $id,
-            'password' => 'sometimes|string|min:8',
-            'phone' => 'sometimes|string|max:15',
-            'is_active' => 'sometimes|boolean',
-            'is_admin' => 'sometimes|boolean',
+        $adm = Administrator::where('id', $id)->update($validator, [
+            'password' => Hash::make($request->password),
         ]);
 
-        if (isset($request->password)) {
-            $data = Hash::make($request->password);
-        }
-
-        $adm->update($data);
-
-        return response()->json(['status' => true,'message' => 'Administrador atualizado com sucesso', 'Data' => $adm], 200);
+        return response()->json(['status' => true, 'message' => 'Administrador atualizado com sucesso', 'Data' => $adm], 200);
     }
 
     /**
@@ -105,10 +80,10 @@ class AdministratorController extends Controller
     {
         $adm = Administrator::find($id);
         if (!$adm) {
-            return response()->json(['status' => false,'message' => 'Administrador não encontrado'], 404);
+            return response()->json(['status' => false, 'message' => 'Administrador não encontrado'], 404);
         }
-        
+
         $adm->update(['is_active' => false]);
-        return response()->json(['status' => true,'message' => 'Administrador desativado com sucesso'], 200);
+        return response()->json(['status' => true, 'message' => 'Administrador desativado com sucesso'], 200);
     }
 }

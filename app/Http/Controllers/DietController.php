@@ -13,10 +13,9 @@ class DietController extends Controller
      */
     public function index()
     {
-        //
-        $diet = Diet::all();
+        $diet = Diet::all()->orderBy('start_date', 'desc');
 
-        return response()->json(['dietAll' => $diet], 200);
+        return response()->json(['diets' => $diet], 200);
     }
 
     /**
@@ -42,7 +41,8 @@ class DietController extends Controller
      */
     public function show(string $id)
     {
-        //
+        $diet = Diet::find($id);
+        return response()->json(['status' => true, 'diet' => $diet], 200);
     }
 
     /**
@@ -56,9 +56,11 @@ class DietController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(CreateDietRequest $request, string $id)
     {
-        //
+        $validated = $request->validate();
+        $diet = Diet::where('id', $id)->update($validated);
+        return response()->json(['status' => true, 'message' => 'Dieta atualizada com sucesso', 'data' => $diet], 200);
     }
 
     /**
@@ -66,7 +68,9 @@ class DietController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        $diet = Diet::find($id);
+        $diet->update(['finalized_at' => now()]);
+        return response()->json(['status' => true, 'message' => 'Dieta finalizada com sucesso'], 200);
     }
 
     public function finishDiet(Request $request)

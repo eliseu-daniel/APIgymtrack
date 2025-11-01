@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\CreateDietFeedbackRequest;
+use App\Models\DietFeedback;
 use Illuminate\Http\Request;
 
 class DietFeedbackController extends Controller
@@ -11,7 +13,7 @@ class DietFeedbackController extends Controller
      */
     public function index()
     {
-        //
+        return response()->json(['status' => true, 'data' => DietFeedback::all()], 200);
     }
 
     /**
@@ -25,9 +27,13 @@ class DietFeedbackController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(CreateDietFeedbackRequest $request)
     {
-        //
+        $validator = $request->validate();
+
+        $feedback = DietFeedback::create($validator);
+
+        return response()->json(['status' => true, 'message' => 'Feedback de dieta criado com sucesso', 'data' => $feedback], 201);
     }
 
     /**
@@ -35,7 +41,7 @@ class DietFeedbackController extends Controller
      */
     public function show(string $id)
     {
-        //
+        return response()->json(['status' => true, 'data' => DietFeedback::find($id)], 200);
     }
 
     /**

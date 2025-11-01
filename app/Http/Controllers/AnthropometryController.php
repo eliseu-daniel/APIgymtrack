@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\CreateAnthropometryRequest;
 use App\Models\Anthropometry;
 use Illuminate\Http\Request;
 
@@ -26,21 +27,11 @@ class AnthropometryController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(CreateAnthropometryRequest $request)
     {
-        $anthopometry = $request->validate([
-            'patient_id'                => 'request|patients,id',
-            'weights_initial'           => 'required|decimal:0,2',
-            'height'                    => 'required|decimal:0,2',
-            'body_fat'                  => 'required|decimal:0,2',
-            'body_muscle'               => 'required|decimal:0,2',
-            'physical_activity_level'   => 'required|in:light,moderate,vigorous',
-            'TMB'                       => 'required|integer',
-            'GET'                       => 'required|integer',
-            'lesions'                   => 'nullable|string',
-        ]);
-        $anthopometry = Anthropometry::create($anthopometry);
-        return response()->json(['status' => true, 'data' => $anthopometry], 201);
+        $validator = $request->validate();
+        $anthopometry = Anthropometry::create($validator);
+        return response()->json(['status' => true, 'message' => 'Antropometria criada com sucesso', 'data' => $anthopometry], 201);
     }
 
     /**
@@ -69,20 +60,10 @@ class AnthropometryController extends Controller
             return response()->json(['status' => false, 'message' => 'Anthropometry not found'], 404);
         }
 
-        $data = $request->validate([
-            'patient_id'                => 'request|patients,id',
-            'weights_initial'           => 'sometimes|decimal:0,2',
-            'height'                    => 'sometimes|decimal:0,2',
-            'body_fat'                  => 'sometimes|decimal:0,2',
-            'body_muscle'               => 'sometimes|decimal:0,2',
-            'physical_activity_level'   => 'sometimes|in:light,moderate,vigorous',
-            'TMB'                       => 'sometimes|integer',
-            'GET'                       => 'sometimes|integer',
-            'lesions'                   => 'nullable|string',
-        ]);
+        $validator = $request->validate();
 
-        $anthopometry->update($data);
-        return response()->json(['status' => true, 'data' => $anthopometry], 200);
+        $anthopometry = Anthropometry::where('id', $id)->update($validator);
+        return response()->json(['status' => true, 'message' => 'Antropometria atualizada com sucesso', 'data' => $anthopometry], 200);
     }
 
     /**

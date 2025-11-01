@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\CreateDietItemRequest;
+use App\Models\DietItem;
 use Illuminate\Http\Request;
 
 class DietItemController extends Controller
@@ -11,7 +13,7 @@ class DietItemController extends Controller
      */
     public function index()
     {
-        //
+        return response()->json(['satus' => true, 'message' => DietItem::all()], 200);
     }
 
     /**
@@ -25,9 +27,11 @@ class DietItemController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(CreateDietItemRequest $request)
     {
-        //
+        $validator = $request->validated();
+        $dietItem = DietItem::create($validator);
+        return response()->json(['status' => true, 'message' => 'Item de dieta criado com sucesso.', 'data' => $dietItem], 201);
     }
 
     /**
@@ -41,17 +45,21 @@ class DietItemController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $id)
-    {
-        //
-    }
+    public function edit(string $id) {}
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(CreateDietItemRequest $request, string $id)
     {
-        //
+        $Item = DietItem::find($id);
+        if (!$Item) {
+            return response()->json(['status' => false, 'message' => 'Item de dieta não encontrado.'], 404);
+        }
+        $validator = $request->validated();
+
+        $dietItem = DietItem::where('id', $id)->update($validator);
+        return response()->json(['status' => true, 'message' => 'Item de dieta atualizado com sucesso.', 'data' => $dietItem], 200);
     }
 
     /**
@@ -59,6 +67,11 @@ class DietItemController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        $Item = DietItem::find($id);
+        if (!$Item) {
+            return response()->json(['status' => false, 'message' => 'Item de dieta não encontrado.'], 404);
+        }
+        $DietItem = DietItem::where('id', $id)->update('is_active', false);
+        return response()->json(['status' => true, 'message' => 'Item de dieta desativado com sucesso.'], 200);
     }
 }
