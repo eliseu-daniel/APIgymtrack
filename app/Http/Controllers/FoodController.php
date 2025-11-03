@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\CreateFoodRequest;
+use App\Models\Food;
 use Illuminate\Http\Request;
 
 class FoodController extends Controller
@@ -11,7 +13,7 @@ class FoodController extends Controller
      */
     public function index()
     {
-        //
+        return response()->json(['status' => 'success', 'message' => Food::all()], 200);
     }
 
     /**
@@ -25,9 +27,11 @@ class FoodController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(CreateFoodRequest $request)
     {
-        //
+        $foodValidated = $request->validated();
+        $food = Food::create($foodValidated);
+        return response()->json(['status' => true, 'message' => 'Comida criada com sucesso!', 'foodData' => $food], 201);
     }
 
     /**
@@ -35,7 +39,11 @@ class FoodController extends Controller
      */
     public function show(string $id)
     {
-        //
+        $food = Food::find($id);
+        if (!$food) {
+            return response()->json(['status' => false, 'message' => 'Comida não encontrada!'], 404);
+        }
+        return response()->json(['status' => true, 'message' => $food], 200);
     }
 
     /**
@@ -49,9 +57,15 @@ class FoodController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(CreateFoodRequest $request, string $id)
     {
-        //
+        $food = Food::find($id);
+        if (!$food) {
+            return response()->json(['status' => false, 'message' => 'Comida não encontrada!'], 404);
+        }
+        $foodValidated = $request->validated();
+        $food = Food::where('id', $id)->update($foodValidated);
+        return response()->json(['status' => true, 'message' => 'Comida atualizada com sucesso!', 'foodData' => $food], 200);
     }
 
     /**
@@ -59,6 +73,11 @@ class FoodController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        $food = Food::find($id);
+        if (!$food) {
+            return response()->json(['status' => false, 'message' => 'Comida não encontrada!'], 404);
+        }
+        Food::where('id', $id)->delete();
+        return response()->json(['status' => true, 'message' => 'Comida deletada com sucesso!'], 200);
     }
 }
