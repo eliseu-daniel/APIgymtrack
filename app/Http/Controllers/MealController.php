@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\CreateMealRequest;
+use App\Models\Meal;
 use Illuminate\Http\Request;
 
 class MealController extends Controller
@@ -11,7 +13,7 @@ class MealController extends Controller
      */
     public function index()
     {
-        //
+        return response()->json(['staus' => true, 'mealData:' => Meal::all()], 200);
     }
 
     /**
@@ -25,9 +27,11 @@ class MealController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(CreateMealRequest $request)
     {
-        //
+        $mealValidated = $request->validated();
+        $meal = Meal::create($mealValidated);
+        return response()->json(['status' => true, 'message:' => 'Refeição criada com sucesso', 'mealData' => $meal], 201);
     }
 
     /**
@@ -35,7 +39,11 @@ class MealController extends Controller
      */
     public function show(string $id)
     {
-        //
+        $meal = Meal::find($id);
+        if (!$meal) {
+            return response()->json(['status' => false, 'message:' => 'Refeição não encontrada'], 404);
+        }
+        return response()->json(['status' => true, 'mealData:' => $meal], 200);
     }
 
     /**
@@ -49,9 +57,16 @@ class MealController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(CreateMealRequest $request, string $id)
     {
-        //
+        $meal = Meal::find($id);
+        if (!$meal) {
+            return response()->json(['status' => false, 'message:' => 'Refeição não encontrada'], 404);
+        }
+
+        $mealValidated = $request->validated();
+        $meal = Meal::where('id', $id)->update($mealValidated);
+        return response()->json(['status' => true, 'message:' => 'Refeição atualizada com sucesso', 'mealData' => $meal], 200);
     }
 
     /**
@@ -59,6 +74,12 @@ class MealController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        $meal = Meal::find($id);
+        if (!$meal) {
+            return response()->json(['status' => false, 'message:' => 'Refeição não encontrada'], 404);
+        }
+
+        Meal::where('id', $id)->delete();
+        return response()->json(['status' => true, 'message:' => 'Refeição deletada com sucesso'], 200);
     }
 }
