@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\CreateExerciseRequest;
+use App\Models\Exercise;
 use Illuminate\Http\Request;
 
 class ExerciseController extends Controller
@@ -11,7 +13,7 @@ class ExerciseController extends Controller
      */
     public function index()
     {
-        //
+        return response()->json(['status' => true, 'Exercises:' => Exercise::all()], 200);
     }
 
     /**
@@ -25,9 +27,11 @@ class ExerciseController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(CreateExerciseRequest $request)
     {
-        //
+        $validatedExercises = $request->validated();
+        $exercise = Exercise::create($validatedExercises);
+        return response()->json(['status' => true, 'message:' => 'Exercício criado com sucesso.', 'Exercise:' => $exercise], 201);
     }
 
     /**
@@ -35,7 +39,11 @@ class ExerciseController extends Controller
      */
     public function show(string $id)
     {
-        //
+        $exercise = Exercise::find($id);
+        if (!$exercise) {
+            return response()->json(['status' => false, 'message:' => 'Exercício não encontrado.'], 404);
+        }
+        return response()->json(['status' => true, 'Exercise:' => $exercise], 200);
     }
 
     /**
@@ -49,9 +57,15 @@ class ExerciseController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(CreateExerciseRequest $request, string $id)
     {
-        //
+        $exercise = Exercise::find($id);
+        if (!$exercise) {
+            return response()->json(['status' => false, 'message:' => 'Exercício não encontrado.'], 404);
+        }
+        $validatedExercises = $request->validated();
+        $exerciseUpdated = Exercise::where('id', $id)->update($validatedExercises);
+        return response()->json(['status' => true, 'message:' => 'Exercício atualizado com sucesso.', 'Exercise:' => $exerciseUpdated], 200);
     }
 
     /**
@@ -59,6 +73,7 @@ class ExerciseController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        $exercise = Exercise::delete($id);
+        return response()->json(['status' => true, 'message:' => 'Exercício excluído com sucesso.'], 200);
     }
 }
