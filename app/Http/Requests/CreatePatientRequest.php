@@ -22,7 +22,13 @@ class CreatePatientRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:patients,email',
+            'phone' => 'required|string|max:20',
+            'birth_date' => 'nullable|date',
+            'gender' => 'nullable|in:male,female,other',
+            'allergies' => 'nullable|string',
+            'is_active' => 'boolean',
         ];
     }
 }

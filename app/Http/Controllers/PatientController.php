@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\CreatePatientRequest;
 use App\Models\Patient;
 use Illuminate\Auth\Events\Validated;
 use Illuminate\Http\Request;
@@ -28,35 +29,19 @@ class PatientController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(CreatePatientRequest $request)
     {
 
         if ($request->has('birth_date')) {
             $birthDate = $this->convertDateFormat($request->birth_date);
             if ($birthDate) {
                 $request->merge(['birth_date' => $birthDate]);
+            }
         }
-    }
 
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:patients,email',
-            'phone' => 'required|string|max:20',
-            'birth_date' => 'nullable|date',
-            'gender' => 'nullable|in:male,female,other',
-            'allergies' => 'nullable|string',
-            'is_active' => 'boolean',
-        ]);
+        $patientValidated = $request->validate();
 
-        $patient = Patient::create([
-            'name'          => $request->name,
-            'email'         => $request->email,
-            'phone'         => $request->phone,
-            'birth_date'    => $request->birth_date,
-            'gender'        => $request->gender,
-            'allergies'     => $request->allergies,
-            'is_active'     => $request->is_active ?? true,
-        ]);
+        $patient = Patient::create($patientValidated);
 
         return response()->json(['status' => true, 'message' => 'Paciente criado com sucesso.', 'data' => $patient], 201);
     }
@@ -87,7 +72,7 @@ class PatientController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(CreatePatientRequest $request, string $id)
     {
         $patient = Patient::find($id);
         if (!$patient) {
@@ -101,20 +86,11 @@ class PatientController extends Controller
             }
         }
 
-        $request->validate([
-            'name' => 'sometimes|required|string|max:255',
-            'email' => 'sometimes|required|email|unique:patients,email,' . $patient->id,
-            'phone' => 'sometimes|required|string|max:20',
-            'birth_date' => 'nullable|date',
-            'gender' => 'nullable|in:male,female,other',
-            'allergies' => 'nullable|string',
-            'is_active' => 'boolean',
-        ]);
+        $patientValidated = $request->validate();
 
-        $patient->update($request->only(['name', 'email', 'phone', 'birth_date', 'gender', 'allergies', 'is_active'])); 
-        
+        $patient = Patient::where('id', $id)->update($patientValidated);
+
         return response()->json(['status' => true, 'message' => 'Paciente atualizado com sucesso.', 'data' => $patient], 200);
-
     }
 
     /**
