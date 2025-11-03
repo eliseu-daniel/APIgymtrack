@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\CreateWorkoutFeedbackRequest;
+use App\Models\WorkoutFeedback;
 use Illuminate\Http\Request;
 
 class WorkoutFeedbackController extends Controller
@@ -11,7 +13,7 @@ class WorkoutFeedbackController extends Controller
      */
     public function index()
     {
-        //
+        return response()->json(['status' => true, 'DataFeedback' => WorkoutFeedback::all()], 200);
     }
 
     /**
@@ -25,9 +27,11 @@ class WorkoutFeedbackController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(CreateWorkoutFeedbackRequest $request)
     {
-        //
+        $workoutFeedbackValited = $request->validated();
+        $workoutFeedback = WorkoutFeedback::create($workoutFeedbackValited);
+        return response()->json(['status' => true, 'message:' => 'Feedback do treino criado com sucesso', 'DataFeedback' => $workoutFeedback], 201);
     }
 
     /**
@@ -35,7 +39,11 @@ class WorkoutFeedbackController extends Controller
      */
     public function show(string $id)
     {
-        //
+        $workoutFeedback = WorkoutFeedback::find($id);
+        if (!$workoutFeedback) {
+            return response()->json(['status' => false, 'message' => 'Feeback não encontrado'], 404);
+        }
+        return response()->json(['status' => true, 'message' => $workoutFeedback], 200);
     }
 
     /**
@@ -49,7 +57,7 @@ class WorkoutFeedbackController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(CreateWorkoutFeedbackRequest $request, string $id)
     {
         //
     }
