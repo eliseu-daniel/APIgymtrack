@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\CreateMuscleGroupRequest;
+use App\Models\MuscleGroup;
 use Illuminate\Http\Request;
 
 class MuscleGroupController extends Controller
@@ -11,7 +13,7 @@ class MuscleGroupController extends Controller
      */
     public function index()
     {
-        //
+        return response()->json(['status' => true, 'MuscleDatas:' => MuscleGroup::all()], 200);
     }
 
     /**
@@ -25,9 +27,11 @@ class MuscleGroupController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(CreateMuscleGroupRequest $request)
     {
-        //
+        $validatedMuscleGroup = $request->validated();
+        $muscleGroup = MuscleGroup::create($validatedMuscleGroup);
+        return response()->json(['status' => true, 'message' => 'Grupo Muscular criado com sucesso', 'MuscleData' => $muscleGroup], 201);
     }
 
     /**
@@ -35,7 +39,11 @@ class MuscleGroupController extends Controller
      */
     public function show(string $id)
     {
-        //
+        $muscleGroup = MuscleGroup::find($id);
+        if (!$muscleGroup) {
+            return response()->json(['status' => false, 'message' => 'Grupo Muscular não encontrado'], 404);
+        }
+        return response()->json(['status' => true, 'MuscleData' => $muscleGroup], 200);
     }
 
     /**
@@ -49,9 +57,15 @@ class MuscleGroupController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(CreateMuscleGroupRequest $request, string $id)
     {
-        //
+        $muscleGroup = MuscleGroup::find($id);
+        if (!$muscleGroup) {
+            return response()->json(['status' => false, 'message' => 'Grupo Muscular não encontrado'], 404);
+        }
+        $validatedMuscleGroup = $request->validated();
+        $muscleGroup = MuscleGroup::where('id', $id)->update($validatedMuscleGroup);
+        return response()->json(['status' => true, 'message' => 'Grupo Muscular atualizado com sucesso', 'MuscleData' => $muscleGroup], 200);
     }
 
     /**
@@ -59,6 +73,11 @@ class MuscleGroupController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        $muscleGroup = MuscleGroup::find($id);
+        if (!$muscleGroup) {
+            return response()->json(['status' => false, 'message' => 'Grupo Muscular não encontrado'], 404);
+        }
+        MuscleGroup::where('id', $id)->delete();
+        return response()->json(['status' => true, 'message' => 'Grupo Muscular deletado com sucesso'], 200);
     }
 }

@@ -22,7 +22,16 @@ class CreateMuscleGroupRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'name' => 'required|string|max:255',
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'name.required' => 'O nome é um campo obrigatório.',
+            'name.string' => 'O nome tem que ser string.',
+            'name.max' => 'O nome não pode ultrapassar 255 characteres.',
         ];
     }
 }
