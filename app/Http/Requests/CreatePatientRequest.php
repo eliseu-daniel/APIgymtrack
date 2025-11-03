@@ -31,4 +31,18 @@ class CreatePatientRequest extends FormRequest
             'is_active' => 'boolean',
         ];
     }
+
+    public function messages(): array
+    {
+        return [
+            'name.required' => 'O nome é obrigatório.',
+            'email.required' => 'O email é obrigatório.',
+            'email.email' => 'O email deve ser um endereço de email válido.',
+            'email.unique' => 'Este email já está em uso.',
+            'phone.required' => 'O telefone é obrigatório.',
+            'birth_date.date' => 'A data de nascimento deve ser uma data válida.',
+            'gender.in' => 'O gênero deve ser male, female ou other.',
+            'is_active.boolean' => 'O campo is_active deve ser verdadeiro ou falso.',
+        ];
+    }
 }
