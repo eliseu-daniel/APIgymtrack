@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\CreateWorkoutRequest;
+use App\Models\Workout;
 use Illuminate\Http\Request;
 
 class WorkoutController extends Controller
@@ -11,7 +13,7 @@ class WorkoutController extends Controller
      */
     public function index()
     {
-        //
+        return response()->json(['status' => true, 'WorkoutData' => Workout::all()], 200);
     }
 
     /**
@@ -25,9 +27,11 @@ class WorkoutController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(CreateWorkoutRequest $request)
     {
-        //
+        $workoutValidated = $request->validated();
+        $workout = Workout::create($workoutValidated);
+        return response()->json(['status' => true, 'message:' => 'Treino criado com sucesso', 'workout' => $workout], 201);
     }
 
     /**
@@ -35,7 +39,11 @@ class WorkoutController extends Controller
      */
     public function show(string $id)
     {
-        //
+        $workout = Workout::find($id);
+        if (!$workout) {
+            return response()->json(['status' => false, 'message' => 'Treino não encontrado'], 404);
+        }
+        return response()->json(['status' => true, 'workout' => $workout], 200);
     }
 
     /**
@@ -49,9 +57,15 @@ class WorkoutController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(CreateWorkoutRequest $request, string $id)
     {
-        //
+        $workout = Workout::find($id);
+        if (!$workout) {
+            return response()->json(['status' => false, 'message' => 'Treino não encontrado'], 404);
+        }
+        $workoutValidated = $request->validated();
+        $workout  = Workout::where('id', $id)->update($workoutValidated);
+        return response()->json(['status' => true, 'message' => 'Treino atualizado com sucesso', 'workout' => $workout], 200);
     }
 
     /**
@@ -59,6 +73,11 @@ class WorkoutController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        $workout = Workout::find($id);
+        if (!$workout) {
+            return response()->json(['status' => false, 'message' => 'Treino não encontrado'], 404);
+        }
+        $workout->delete();
+        return response()->json(['status' => true, 'message' => 'Treino deletado com sucesso'], 200);
     }
 }
