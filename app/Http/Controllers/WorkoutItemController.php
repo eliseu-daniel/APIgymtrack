@@ -2,7 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Http\Requests\CreateWorkoutItemRequest;
+use App\Models\WorkoutItem;
 
 class WorkoutItemController extends Controller
 {
@@ -11,7 +12,7 @@ class WorkoutItemController extends Controller
      */
     public function index()
     {
-        //
+        return response()->json(['status' => true, 'ItemWorkoutData' => WorkoutItem::all()], 200);
     }
 
     /**
@@ -25,9 +26,11 @@ class WorkoutItemController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(CreateWorkoutItemRequest $request)
     {
-        //
+        $dataItemWorkout = $request->validated();
+        $itemWorkout = WorkoutItem::create($dataItemWorkout);
+        return response()->json(['status' => true, 'message' => 'Item de treino criado com sucesso!', 'ItemWorkoutData' => $itemWorkout], 201);
     }
 
     /**
@@ -35,7 +38,11 @@ class WorkoutItemController extends Controller
      */
     public function show(string $id)
     {
-        //
+        $itemWorkout = WorkoutItem::find($id);
+        if (!$itemWorkout) {
+            return response()->json(['status' => false, 'message' => 'Item de treino não encontrado.'], 404);
+        }
+        return response()->json(['status' => true, 'ItemWorkoutData' => $itemWorkout], 200);
     }
 
     /**
@@ -49,9 +56,18 @@ class WorkoutItemController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(CreateWorkoutItemRequest $request, string $id)
     {
-        //
+        $itemWorkout = WorkoutItem::find($id);
+        if (!$itemWorkout) {
+            return response()->json(['status' => false, 'message' => 'Item de treino não encontrado.'], 404);
+        }
+        $itemWorkout->update(['is_active' => false]);
+
+        $newItemData = $request->validated();
+        $newData = WorkoutItem::create($newItemData);
+
+        return response()->json(['status' => true, 'message' => 'Item de treino atualizado com sucesso!', 'ItemWorkoutData' => $newData], 200);
     }
 
     /**
@@ -59,6 +75,12 @@ class WorkoutItemController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        $itemWorkout = WorkoutItem::find($id);
+        if (!$itemWorkout) {
+            return response()->json(['status' => false, 'message' => 'Item de treino não encontrado.'], 404);
+        }
+        $itemWorkout->update(['is_active' => false]);
+
+        return response()->json(['status' => true, 'message' => 'Item desativado com sucesso'], 200);
     }
 }
