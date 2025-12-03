@@ -22,7 +22,14 @@ class CreateWorkoutTypeRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'workout_type' => 'required|string|min:1|max:255'
         ];
+    }
+
+    public function messases(): array
+    {
+        return ([
+            'workout_type' => 'Nome do tipo de treino é obrigatório',
+        ]);
     }
 }
