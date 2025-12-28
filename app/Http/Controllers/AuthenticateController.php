@@ -2,18 +2,16 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\CreateAuthenticateRequest;
 use App\Models\Educator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
 class AuthenticateController extends Controller
 {
-    public function login(Request $request)
+    public function login(CreateAuthenticateRequest $request)
     {
-        $request->validate([
-            'email' => 'required|email',
-            'password' => 'required',
-        ]);
+        $request->validate();
 
         $educator = Educator::where('email', $request->email)->first();
 
@@ -42,14 +40,9 @@ class AuthenticateController extends Controller
         ], 200);
     }
 
-    public function register(Request $request)
+    public function register(CreateAuthenticateRequest $request)
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:educators',
-            'phone' => 'required|string|max:20',
-            'password' => 'required|string|min:6',
-        ]);
+        $request->validate();
 
         $educator = Educator::create([
             'name' => $request->name,
