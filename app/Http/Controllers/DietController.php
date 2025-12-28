@@ -13,10 +13,13 @@ class DietController extends Controller
      */
     public function index()
     {
+        $idEducator = request()->user()->id;
+
         $diet = Diet::select('patients.name', 'diets.*', 'meals.*')
             ->join('patients', 'diets.patient_id', '=', 'patients.id')
             ->join('meals', 'diets.id', '=', 'meals.diet_id')
             ->orderBy('diets.start_date', 'desc')
+            ->where('patient_registrations.educator_id', $idEducator)
             ->get();
 
         return response()->json(['diets' => $diet], 200);
@@ -53,7 +56,6 @@ class DietController extends Controller
             ->where('patient_registrations.educator_id', $idEducator)
             ->where('patients.id', $idPatient)
             ->where('diets.id', $id)
-
             ->get();
         return response()->json(['status' => true, 'diet' => $diet], 200);
     }
