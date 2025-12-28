@@ -13,7 +13,11 @@ class DietController extends Controller
      */
     public function index()
     {
-        $diet = Diet::all()->orderBy('start_date', 'desc');
+        $diet = Diet::select('patients.name', 'diets.*', 'meals.*')
+            ->join('patients', 'diets.patient_id', '=', 'patients.id')
+            ->join('meals', 'diets.id', '=', 'meals.diet_id')
+            ->orderBy('diets.start_date', 'desc')
+            ->get();
 
         return response()->json(['diets' => $diet], 200);
     }
@@ -39,9 +43,14 @@ class DietController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show(string $id, string $idPatient)
     {
-        $diet = Diet::find($id);
+        $diet = Diet::select('patients.name', 'diets.*', 'meals.*')
+            ->join('patients', 'diets.patient_id', '=', 'patients.id')
+            ->join('meals', 'diets.id', '=', 'meals.diet_id')
+            ->where('patients.id', $idPatient)
+            ->where('diets.id', $id)
+            ->get();
         return response()->json(['status' => true, 'diet' => $diet], 200);
     }
 
