@@ -39,18 +39,14 @@ class AnthropometryController extends Controller
      */
     public function show(string $id, string $idPatient)
     {
+        $idEducator = request()->user()->id;
+
         $anthopometry = Anthropometry::select(
             'patients.name',
-            'anthropometries.weights_initial',
-            'anthropometries.height',
-            'anthropometries.body_fat',
-            'anthropometries.body_muscle',
-            'anthropometries.physical_activity_level',
-            'anthropometries.TMB',
-            'anthropometries.GET',
-            'anthropometries.lesions',
-            'anthropometries.is_active'
-        )->join('patients', 'patients.id', '=', 'anthropometries.patient_id', $idPatient)
+            'anthropometries.*'
+        )
+            ->join('patients', 'patients.id', '=', 'anthropometries.patient_id', $idPatient)
+            ->where('patient_registrations.educator_id', $idEducator)
             ->where('anthropometries.id', $id)
             ->where('patients.id', $idPatient)
             ->first();
