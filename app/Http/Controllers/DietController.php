@@ -45,11 +45,15 @@ class DietController extends Controller
      */
     public function show(string $id, string $idPatient)
     {
+        $idEducator = request()->user()->id;
+
         $diet = Diet::select('patients.name', 'diets.*', 'meals.*')
             ->join('patients', 'diets.patient_id', '=', 'patients.id')
             ->join('meals', 'diets.id', '=', 'meals.diet_id')
+            ->where('patient_registrations.educator_id', $idEducator)
             ->where('patients.id', $idPatient)
             ->where('diets.id', $id)
+
             ->get();
         return response()->json(['status' => true, 'diet' => $diet], 200);
     }
