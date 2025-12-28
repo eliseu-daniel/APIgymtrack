@@ -37,9 +37,27 @@ class AnthropometryController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show(string $id, string $idPatient)
     {
-        //
+        $anthopometry = Anthropometry::select(
+            'patients.name',
+            'anthropometries.weights_initial',
+            'anthropometries.height',
+            'anthropometries.body_fat',
+            'anthropometries.body_muscle',
+            'anthropometries.physical_activity_level',
+            'anthropometries.TMB',
+            'anthropometries.GET',
+            'anthropometries.lesions',
+            'anthropometries.is_active'
+        )->join('patients', 'patients.id', '=', 'anthropometries.patient_id', $idPatient)
+            ->where('anthropometries.id', $id)
+            ->where('patients.id', $idPatient)
+            ->first();
+        if (!$anthopometry) {
+            return response()->json(['status' => false, 'message' => 'Antropometria não encontrada'], 404);
+        }
+        return response()->json(['status' => true, 'data' => $anthopometry], 200);
     }
 
     /**
@@ -53,7 +71,7 @@ class AnthropometryController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(CreateAnthropometryRequest $request, string $id)
     {
         $anthopometry = Anthropometry::find($id);
         if (!$anthopometry) {
