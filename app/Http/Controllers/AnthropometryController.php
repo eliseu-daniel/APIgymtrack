@@ -13,7 +13,18 @@ class AnthropometryController extends Controller
      */
     public function index()
     {
-        return response()->json(['satus' => true, 'data' => Anthropometry::all()], 200);
+        $idEducator = request()->user()->id;
+
+        return response()->json([
+            'satus' => true,
+            'data' => Anthropometry::select(
+                'patients.name',
+                'anthropometries.*'
+            )
+                ->join('patients', 'patients.id', '=', 'anthropometries.patient_id')
+                ->where('patient_registrations.educator_id', $idEducator)
+                ->get()
+        ], 200);
     }
 
     /**
@@ -49,7 +60,7 @@ class AnthropometryController extends Controller
             ->where('patient_registrations.educator_id', $idEducator)
             ->where('anthropometries.id', $id)
             ->where('patients.id', $idPatient)
-            ->first();
+            ->get();
         if (!$anthopometry) {
             return response()->json(['status' => false, 'message' => 'Antropometria não encontrada'], 404);
         }
