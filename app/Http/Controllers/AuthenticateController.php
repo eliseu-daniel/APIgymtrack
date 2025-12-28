@@ -11,7 +11,7 @@ class AuthenticateController extends Controller
 {
     public function login(CreateAuthenticateRequest $request)
     {
-        $request->validate();
+        $request->validated();
 
         $educator = Educator::where('email', $request->email)->first();
 
@@ -42,15 +42,9 @@ class AuthenticateController extends Controller
 
     public function register(CreateAuthenticateRequest $request)
     {
-        $request->validate();
+        $request->validated();
 
-        $educator = Educator::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'phone' => $request->phone,
-            'password' => Hash::make($request->password),
-            'is_active' => true,
-        ]);
+        $educator = Educator::create();
 
         return response()->json([
             // 'token' => $educator->createToken('api-token')->plainTextToken,
