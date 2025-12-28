@@ -13,7 +13,12 @@ class DietItemController extends Controller
      */
     public function index()
     {
-        return response()->json(['satus' => true, 'message' => DietItem::all()], 200);
+        $idEducator = request()->user()->id;
+        return response()->json(['status' => true, 'message' => DietItem::select('patients.name', 'diet_items.*', 'diets.id')
+            ->join('patients', 'patients.id', '=', 'diet_items.patient_id')
+            ->join('diets', 'diets.id', '=', 'diet_items.diet_id')
+            ->where('patient_registrations.educator_id', $idEducator)
+            ->get()], 200);
     }
 
     /**
@@ -37,9 +42,16 @@ class DietItemController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show(string $id, string $idPatient)
     {
-        //
+        $idEducator = request()->user()->id;
+        return response()->json(['status' => true, 'message' => DietItem::select('patients.name', 'diet_items.*', 'diets.id')
+            ->join('patients', 'patients.id', '=', 'diet_items.patient_id')
+            ->join('diets', 'diets.id', '=', 'diet_items.diet_id')
+            ->where('patient_registrations.educator_id', $idEducator)
+            ->where('diet_items.id', $id)
+            ->where('patients.id', $idPatient)
+            ->get()], 200);
     }
 
     /**
