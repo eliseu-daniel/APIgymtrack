@@ -13,7 +13,11 @@ class DietFeedbackController extends Controller
      */
     public function index()
     {
-        return response()->json(['status' => true, 'data' => DietFeedback::all()], 200);
+        $idEducator = request()->user()->id;
+        return response()->json(['status' => true, 'data' => DietFeedback::select('patients.name', 'diet_feedbacks.*')
+            ->join('patients', 'patients.id', '=', 'diet_feedbacks.patient_id')
+            ->where('patient_registrations.educator_id', $idEducator)
+            ->get()], 200);
     }
 
     /**
@@ -39,9 +43,15 @@ class DietFeedbackController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show(string $id, string $idPatient)
     {
-        return response()->json(['status' => true, 'data' => DietFeedback::find($id)], 200);
+        $idEducator = request()->user()->id;
+        return response()->json(['status' => true, 'data' => DietFeedback::select('patients.name', 'diet_feedbacks.*')
+            ->join('patients', 'patients.id', '=', 'diet_feedbacks.patient_id')
+            ->where('patient_registrations.educator_id', $idEducator)
+            ->where('diet_feedbacks.id', $id)
+            ->where('patients.id', $idPatient)
+            ->get()], 200);
     }
 
     /**
