@@ -13,7 +13,9 @@ class ExerciseController extends Controller
      */
     public function index()
     {
-        return response()->json(['status' => true, 'Exercises:' => Exercise::all()], 200);
+        return response()->json(['status' => true, 'Exercises' => Exercise::select('exercises.*', 'muscle_groups.*')
+            ->join('muscle_groups', 'muscle_groups.id', '=', 'exercises.muscle_group_id')
+            ->get()], 200);
     }
 
     /**
@@ -39,7 +41,10 @@ class ExerciseController extends Controller
      */
     public function show(string $id)
     {
-        $exercise = Exercise::find($id);
+        $exercise = Exercise::select('exercises.*', 'muscle_groups.*')
+            ->join('muscle_groups', 'muscle_groups.id', '=', 'exercises.muscle_group_id')
+            ->where('exercises.id', $id)
+            ->first();
         if (!$exercise) {
             return response()->json(['status' => false, 'message:' => 'Exercício não encontrado.'], 404);
         }
