@@ -13,7 +13,11 @@ class PatientWeightController extends Controller
      */
     public function index()
     {
-        $weight = PatientWeight::all();
+        $idEducator = request()->user()->id;
+
+        $weight = PatientWeight::select('patient_weights.*', 'patients.name')
+            ->join('patients', 'patient_weights.patient_id', '=', 'patients.id')
+            ->where('patient_registrations.educator_id', $idEducator)->get();
         return response()->json(['status' => true, 'weightAll' => $weight], 200);
     }
 
