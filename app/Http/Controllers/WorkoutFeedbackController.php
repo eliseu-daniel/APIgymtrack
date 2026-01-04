@@ -13,7 +13,14 @@ class WorkoutFeedbackController extends Controller
      */
     public function index()
     {
-        return response()->json(['status' => true, 'DataFeedback' => WorkoutFeedback::all()], 200);
+        return response()->json(['status' => true, 'DataFeedback' => WorkoutFeedback::select(
+            'workout_feedbacks.*',
+            'patients.name'
+        )
+            ->join('patients', 'workout_feedbacks.patient_id', '=', 'patients.id')
+            ->join('workouts', 'workout_feedbacks.workout_id', '=', 'workouts.id')
+            ->where('patients.educator_id', request()->user()->id)
+            ->get()], 200);
     }
 
     /**
@@ -39,7 +46,15 @@ class WorkoutFeedbackController extends Controller
      */
     public function show(string $id)
     {
-        $workoutFeedback = WorkoutFeedback::find($id);
+        // essa poha deve ta errada mas depois eu vejo
+        $idEducator = request()->user()->id;
+        $workoutFeedback = WorkoutFeedback::select('workout_feedbacks.*', 'patients.name', 'workouts.name as workout_name')
+            ->join('patients', 'workout_feedbacks.patient_id', '=', 'patients.id')
+            ->join('workouts', 'workout_feedbacks.workout_id', '=', 'workouts.id')
+            ->where('patients_registration.educator_id', $idEducator)
+            ->where('workout_feedbacks.id', $id)
+            ->first();
+
         if (!$workoutFeedback) {
             return response()->json(['status' => false, 'message' => 'Feeback não encontrado'], 404);
         }
