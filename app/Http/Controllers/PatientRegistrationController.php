@@ -16,7 +16,11 @@ class PatientRegistrationController extends Controller
      */
     public function index()
     {
-        $patientRegistration = PatientRegistration::all();
+        $idEducator = request()->user()->id;
+        $patientRegistration = PatientRegistration::select('patient_registrations.*', 'patients.name', 'educators.name as educator_name')
+            ->join('patients', 'patient_registrations.patient_id', '=', 'patients.id')
+            ->join('educators', 'patient_registrations.educator_id', '=', 'educators.id')
+            ->where('patient_registrations.educator_id', $idEducator)->get();
 
         $formattedRegistrations = $patientRegistration->map(function ($registration) {
             $registration->start_date = DateServices::toBrazilianFormat($registration->start_date);
@@ -52,7 +56,13 @@ class PatientRegistrationController extends Controller
      */
     public function show(string $id)
     {
-        $patientRegistration = PatientRegistration::find($id);
+        $idEducator = request()->user()->id;
+        $patientRegistration = PatientRegistration::select('patient_registrations.*', 'patients.name', 'educators.name as educator_name')
+            ->join('patients', 'patient_registrations.patient_id', '=', 'patients.id')
+            ->join('educators', 'patient_registrations.educator_id', '=', 'educators.id')
+            ->where('patient_registrations.id', $id)
+            ->where('patient_registrations.educator_id', $idEducator)
+            ->get();
         return response()->json(['status' => true, 'data' => $patientRegistration], 200);
     }
 
