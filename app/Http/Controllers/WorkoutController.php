@@ -13,7 +13,11 @@ class WorkoutController extends Controller
      */
     public function index()
     {
-        return response()->json(['status' => true, 'WorkoutData' => Workout::all()], 200);
+        $idEducator = request()->user()->id;
+        return response()->json(['status' => true, 'WorkoutData' => Workout::select('workouts.*', 'patients.name', 'workout_types.name as workout_type_name')
+            ->join('patients', 'workouts.patient_id', '=', 'patients.id')
+            ->join('workout_types', 'workouts.workout_type_id', '=', 'workout_types.id')
+            ->where('patients.registration.educator_id', $idEducator)->get()], 200);
     }
 
     /**
@@ -39,7 +43,14 @@ class WorkoutController extends Controller
      */
     public function show(string $id)
     {
-        $workout = Workout::find($id);
+        $idEducator = request()->user()->id;
+        $workout = Workout::select('workouts.*', 'patients.name', 'workout_types.name as workout_type_name')
+            ->join('patients', 'workouts.patient_id', '=', 'patients.id')
+            ->join('workout_types', 'workouts.workout_type_id', '=', 'workout_types.id')
+            ->where('patients.registration.educator_id', $idEducator)
+            ->where('workouts.id', $id)
+            ->first();
+
         if (!$workout) {
             return response()->json(['status' => false, 'message' => 'Treino não encontrado'], 404);
         }
