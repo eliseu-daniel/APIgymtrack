@@ -9,9 +9,12 @@ use Illuminate\Support\Facades\Hash;
 
 class AuthenticateController extends Controller
 {
-    public function login(CreateAuthenticateRequest $request)
+    public function login(Request $request)
     {
-        $request->validated();
+        $request->validate([
+            'email' => 'required|email',
+            'password' => 'required|string|min:6',
+        ]);
 
         $educator = Educator::where('email', $request->email)->first();
 
@@ -42,9 +45,10 @@ class AuthenticateController extends Controller
 
     public function register(CreateAuthenticateRequest $request)
     {
-        $request->validated();
+        $data = $request->validated();
+        $data['password'] = Hash::make($data['password']);
 
-        $educator = Educator::create();
+        $educator = Educator::create($data);
 
         return response()->json([
             // 'token' => $educator->createToken('api-token')->plainTextToken,
