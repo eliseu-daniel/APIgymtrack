@@ -50,13 +50,13 @@ class CreatePatientRegistrationRequest extends FormRequest
             'patient_id'        => 'required|exists:patients,id',
             'educator_id'       => 'required|exists:educators,id',
             'plan_description'  => 'required|in:monthly,quarterly,semiannual',
-            'start_date'        => 'required|date',
-            'end_date'          => 'required|date|after_or_equal:start_date',
-            'finalized_at'       => 'sometimes|date|after_or_equal:end_date',
+            'start_date'        => 'required|date_format:Y-m-d',
+            'end_date'          => 'required|date_format:Y-m-d|after_or_equal:start_date',
+            'finalized_at'       => 'sometimes|date_format:Y-m-d|after_or_equal:end_date',
         ];
     }
 
-    public function message(): array
+    public function messages(): array
     {
         return [
             'patient_id.required'       => 'O campo paciente é obrigatório.',
@@ -70,7 +70,6 @@ class CreatePatientRegistrationRequest extends FormRequest
             'end_date.required'         => 'O campo data de término é obrigatório.',
             'end_date.date'             => 'O campo data de término deve ser uma data válida.',
             'end_date.after_or_equal'   => 'A data de término deve ser igual ou posterior à data de início.',
-            'finalized_at.required'     => 'O campo data de finalização é obrigatório.',
             'finalized_at.date'         => 'O campo data de finalização deve ser uma data válida.',
             'finalized_at.after_or_equal' => 'A data de finalização deve ser igual ou posterior à data de término.',
         ];
