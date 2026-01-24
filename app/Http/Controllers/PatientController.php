@@ -31,15 +31,14 @@ class PatientController extends Controller
      */
     public function store(CreatePatientRequest $request)
     {
+        $patientValidated = $request->validated();
 
-        if ($request->has('birth_date')) {
-            $birthDate = $this->convertDateFormat($request->birth_date);
+        if ($patientValidated['birth_date']) {
+            $birthDate = $this->convertDateFormat($patientValidated['birth_date']);
             if ($birthDate) {
-                $request->merge(['birth_date' => $birthDate]);
+                $patientValidated['birth_date'] = $birthDate;
             }
         }
-
-        $patientValidated = $request->validate();
 
         $patient = Patient::create($patientValidated);
 
@@ -75,18 +74,18 @@ class PatientController extends Controller
     public function update(CreatePatientRequest $request, string $id)
     {
         $patient = Patient::find($id);
+
         if (!$patient) {
             return response()->json(['status' => false, 'message' => 'Paciente não encontrado.'], 404);
         }
+        $patientValidated = $request->validated();
 
-        if ($request->has('birth_date')) {
-            $birthDate = $this->convertDateFormat($request->birth_date);
+        if ($patientValidated['birth_date']) {
+            $birthDate = $this->convertDateFormat($patientValidated['birth_date']);
             if ($birthDate) {
-                $request->merge(['birth_date' => $birthDate]);
+                $patientValidated['birth_date'] = $birthDate;
             }
         }
-
-        $patientValidated = $request->validate();
 
         $patient = Patient::where('id', $id)->update($patientValidated);
 
