@@ -2,22 +2,20 @@
 
 namespace Database\Factories;
 
+use App\Models\Patient;
+use App\Models\PatientWeight;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-/**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\PatientWeight>
- */
 class PatientWeightFactory extends Factory
 {
-    /**
-     * Define the model's default state.
-     *
-     * @return array<string, mixed>
-     */
+    protected $model = PatientWeight::class;
+
     public function definition(): array
     {
         return [
-            //
+            'weight' => (string) fake()->randomFloat(1, 45, 160),
+            'patient_id' => Patient::factory(),
+            'current_date' => fake()->date(),
         ];
     }
 }

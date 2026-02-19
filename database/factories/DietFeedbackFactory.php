@@ -2,22 +2,20 @@
 
 namespace Database\Factories;
 
+use App\Models\Diet;
+use App\Models\DietFeedback;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-/**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\DietFeedback>
- */
 class DietFeedbackFactory extends Factory
 {
-    /**
-     * Define the model's default state.
-     *
-     * @return array<string, mixed>
-     */
+    protected $model = DietFeedback::class;
+
     public function definition(): array
     {
         return [
-            //
+            'diet_id' => Diet::factory(),
+            'comment' => fake()->paragraph(),
+            'send_notification' => fake()->boolean(15),
         ];
     }
 }

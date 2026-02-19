@@ -3,9 +3,13 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+
 
 class WorkoutItem extends Model
 {
+    use HasFactory;
+    
     protected $fillable = [
         'workout_id',
         'exercise_id',

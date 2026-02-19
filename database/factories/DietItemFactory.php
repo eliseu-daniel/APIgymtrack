@@ -2,22 +2,24 @@
 
 namespace Database\Factories;
 
+use App\Models\Diet;
+use App\Models\DietItem;
+use App\Models\Food;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-/**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\DietItem>
- */
 class DietItemFactory extends Factory
 {
-    /**
-     * Define the model's default state.
-     *
-     * @return array<string, mixed>
-     */
+    protected $model = DietItem::class;
+
     public function definition(): array
     {
         return [
-            //
+            'diet_id' => Diet::factory(),
+            'food_id' => Food::factory(),
+            'measure' => fake()->randomElement(['und', 'gr', 'ml', 'l']),
+            'others' => fake()->optional()->sentence(3),
+            'send_notification' => fake()->boolean(15),
+            'is_active' => true,
         ];
     }
 }

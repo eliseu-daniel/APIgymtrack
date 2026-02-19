@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 class Diet extends Model
 {
     use HasFactory;
+    
     protected $fillable = [
         'patient_id',
         'meals_id',

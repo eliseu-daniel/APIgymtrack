@@ -2,22 +2,20 @@
 
 namespace Database\Factories;
 
+use App\Models\WorkoutFeedback;
+use App\Models\WorkoutItem;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-/**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\WorkoutFeedback>
- */
 class WorkoutFeedbackFactory extends Factory
 {
-    /**
-     * Define the model's default state.
-     *
-     * @return array<string, mixed>
-     */
+    protected $model = WorkoutFeedback::class;
+
     public function definition(): array
     {
         return [
-            //
+            'workout_item_id' => WorkoutItem::factory(),
+            'comment' => fake()->paragraph(),
+            'send_notification' => fake()->boolean(15),
         ];
     }
 }

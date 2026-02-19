@@ -12,6 +12,13 @@ class EducatorSeeder extends Seeder
      */
     public function run(): void
     {
-        \App\Models\Educator::factory()->count(10)->create();
+        \App\Models\Educator::create([
+            'name' => 'Educator Test',
+            'email' => 'educator@test.com',
+            'password' => bcrypt('123456'),
+            'phone' => '14999999999',
+            'is_active' => true,
+        ]);
+        \App\Models\Educator::factory()->count(9)->create();
     }
 }

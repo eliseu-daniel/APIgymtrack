@@ -21,7 +21,7 @@ class AnthropometryFactory extends Factory
             'height' => fake()->numberBetween(150, 190),
             'body_fat' => fake()->numberBetween(10, 30),
             'body_muscle' => fake()->numberBetween(30, 50),
-            'physical_activity_level' => fake()->randomElement(['light', 'moderate', 'intense']),
+            'physical_activity_level' => fake()->randomElement(['light', 'moderate', 'vigorous']),
             'TMB' => fake()->numberBetween(1400, 2200),
             'GET' => fake()->numberBetween(1800, 3000),
             'lesions' => fake()->optional()->sentence(),

@@ -19,6 +19,8 @@ class DatabaseSeeder extends Seeder
             EducatorSeeder::class,
             PatientSeeder::class,
             WorkoutSeeder::class,
+
+            FoodSeeder::class,
             DietSeeder::class,
         ]);
     }

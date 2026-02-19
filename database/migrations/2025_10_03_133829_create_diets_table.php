@@ -25,7 +25,7 @@ return new class extends Migration
             $table->integer('fats');
             $table->date('start_date');
             $table->date('end_date');
-            $table->date('finalized_at');           
+            $table->date('finalized_at')->nullable();           
             $table->timestamps();
         });
     }
