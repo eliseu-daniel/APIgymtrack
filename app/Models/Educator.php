@@ -4,11 +4,14 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+
 
 class Educator extends Model
 {
     //
     use HasApiTokens;
+    use HasFactory;
 
     protected $table = 'educators';
 
@@ -25,6 +28,4 @@ class Educator extends Model
     protected $hidden = [
         'password'
     ];
-
-   
 }

@@ -3,9 +3,13 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+
 
 class Patient extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'name',
         'email',
@@ -14,5 +18,5 @@ class Patient extends Model
         'gender',
         'allergies',
         'is_active',
-    ];  
+    ];
 }
