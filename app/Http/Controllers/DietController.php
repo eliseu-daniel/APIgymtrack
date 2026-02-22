@@ -15,12 +15,14 @@ class DietController extends Controller
     {
         $idEducator = request()->user()->id;
 
-        $diet = Diet::select('patients.name', 'diets.*', 'meals.*')
+        $diet = Diet::select('patients.name as patient_name', 'diets.*', 'meals.*')
             ->join('patients', 'diets.patient_id', '=', 'patients.id')
-            ->join('meals', 'diets.id', '=', 'meals.diet_id')
-            ->orderBy('diets.start_date', 'desc')
+            ->join('meals', 'meals.id', '=', 'diets.meals_id')
+            ->join('patient_registrations', 'patient_registrations.patient_id', '=', 'patients.id')
             ->where('patient_registrations.educator_id', $idEducator)
+            ->orderBy('diets.start_date', 'desc')
             ->get();
+
 
         return response()->json(['diets' => $diet], 200);
     }
@@ -46,18 +48,33 @@ class DietController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id, string $idPatient)
+    public function show(string $id)
     {
         $idEducator = request()->user()->id;
 
-        $diet = Diet::select('patients.name', 'diets.*', 'meals.*')
+        $diet = Diet::select([
+            'diets.*',
+            'patients.name as patient_name',
+            'meals.name as meal_name',
+        ])
             ->join('patients', 'diets.patient_id', '=', 'patients.id')
-            ->join('meals', 'diets.id', '=', 'meals.diet_id')
+            ->join('meals', 'meals.id', '=', 'diets.meals_id')
+            ->join('patient_registrations', 'patient_registrations.patient_id', '=', 'patients.id')
             ->where('patient_registrations.educator_id', $idEducator)
-            ->where('patients.id', $idPatient)
             ->where('diets.id', $id)
-            ->get();
-        return response()->json(['status' => true, 'diet' => $diet], 200);
+            ->first();
+
+        if (!$diet) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Dieta não encontrada'
+            ], 404);
+        }
+
+        return response()->json([
+            'status' => true,
+            'diet' => $diet
+        ], 200);
     }
 
     /**
