@@ -14,14 +14,22 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->call([
-            StructureSeeder::class,
+            StructureSeeder::class,          // muscle_groups, meals, workout_types
             AdministratorSeeder::class,
             EducatorSeeder::class,
             PatientSeeder::class,
-            WorkoutSeeder::class,
 
-            FoodSeeder::class,
-            DietSeeder::class,
+            AnthropometrySeeder::class,      // depende de patients
+
+            WorkoutSeeder::class,            // cria exercises + workouts
+            WorkoutItemSeeder::class,        // depende de workouts + exercises
+            WorkoutFeedbackSeeder::class,    // depende de workout_items
+
+            FoodSeeder::class,               // depende de nada
+            PatientRegistrationSeeder::class, // depende de patients + educators
+            PatientWeightSeeder::class,      // depende de patients
+
+            DietSeeder::class,               // depende de patients + meals + food
         ]);
     }
 }

@@ -15,7 +15,7 @@ class WorkoutFeedbackFactory extends Factory
         return [
             'workout_item_id' => WorkoutItem::factory(),
             'comment' => fake()->paragraph(),
-            'send_notification' => fake()->boolean(15),
+            'send_notification' => fake()->boolean(5),
         ];
     }
 }

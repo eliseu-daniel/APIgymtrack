@@ -15,7 +15,7 @@ class DietFeedbackFactory extends Factory
         return [
             'diet_id' => Diet::factory(),
             'comment' => fake()->paragraph(),
-            'send_notification' => fake()->boolean(15),
+            'send_notification' => fake()->boolean(5),
         ];
     }
 }

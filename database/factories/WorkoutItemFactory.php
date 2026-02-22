@@ -15,7 +15,7 @@ class WorkoutItemFactory extends Factory
     {
         return [
             'workout_id' => Workout::factory(),
-            'exercise_id' => Exercise::factory(),
+            'exercise_id' => Exercise::query()->inRandomOrder()->value('id') ?? Exercise::factory(),
 
             'day_of_week' => fake()->randomElement(['seg', 'ter', 'qua', 'qui', 'sex', 'sab', 'dom']),
             'series' => fake()->numberBetween(2, 6),
