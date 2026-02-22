@@ -18,10 +18,12 @@ class AnthropometryController extends Controller
         return response()->json([
             'satus' => true,
             'data' => Anthropometry::select(
+                'anthropometries.id as anthropometry_id',
+                'anthropometries.*',
                 'patients.name',
-                'anthropometries.*'
             )
                 ->join('patients', 'patients.id', '=', 'anthropometries.patient_id')
+                ->join('patient_registrations', 'patient_registrations.patient_id', '=', 'patients.id')
                 ->where('patient_registrations.educator_id', $idEducator)
                 ->get()
         ], 200);
@@ -48,7 +50,7 @@ class AnthropometryController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id, string $idPatient)
+    public function show(string $id)
     {
         $idEducator = request()->user()->id;
 
@@ -56,14 +58,18 @@ class AnthropometryController extends Controller
             'patients.name',
             'anthropometries.*'
         )
-            ->join('patients', 'patients.id', '=', 'anthropometries.patient_id', $idPatient)
-            ->where('patient_registrations.educator_id', $idEducator)
+            ->join('patients', 'patients.id', '=', 'anthropometries.patient_id')
+            ->join('patient_registrations', 'patient_registrations.patient_id', '=', 'patients.id')
             ->where('anthropometries.id', $id)
-            ->where('patients.id', $idPatient)
-            ->get();
+            ->where('patient_registrations.educator_id', $idEducator)
+            ->first();
+        if (!$idEducator) {
+            return response()->json(['status' => false, 'message' => 'Antropometria não encontrada'], 404);
+        }
         if (!$anthopometry) {
             return response()->json(['status' => false, 'message' => 'Antropometria não encontrada'], 404);
         }
+
         return response()->json(['status' => true, 'data' => $anthopometry], 200);
     }
 
