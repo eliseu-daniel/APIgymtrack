@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\CreateDietItemRequest;
+use App\Jobs\NotifyPatientDietItemConfirmedJob;
 use App\Models\DietItem;
 use Illuminate\Http\Request;
 
@@ -71,6 +72,15 @@ class DietItemController extends Controller
         $validator = $request->validated();
 
         $dietItem = DietItem::where('id', $id)->update($validator);
+
+        // se confirmou envio, dispara job
+        if (array_key_exists('send_notification', $dietItem) && $dietItem['send_notification']) {
+            NotifyPatientDietItemConfirmedJob::dispatch(
+                (int) $id,
+                (int) $dietItem->patient_id
+            );
+        }
+
         return response()->json(['status' => true, 'message' => 'Item de dieta atualizado com sucesso.', 'data' => $dietItem], 200);
     }
 
@@ -85,5 +95,26 @@ class DietItemController extends Controller
         }
         $DietItem = DietItem::where('id', $id)->update('is_active', false);
         return response()->json(['status' => true, 'message' => 'Item de dieta desativado com sucesso.'], 200);
+    }
+
+    public function notifiedForPatient(Request $request)
+    {
+        $idPatient = request()->user()->id;
+
+        $data = DietItem::query()
+            ->join('diets', 'diets.id', '=', 'diet_items.diet_id')
+            ->where('diets.patient_id', $idPatient)
+            ->where('diet_items.send_notification', true)
+            ->orderBy('diet_items.updated_at', 'desc')
+            ->select([
+                'diet_items.*',
+                'diets.id as diet_id',
+            ])
+            ->get();
+
+        return response()->json([
+            'status' => true,
+            'data' => $data,
+        ], 200);
     }
 }

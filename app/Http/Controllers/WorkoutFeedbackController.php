@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\CreateWorkoutFeedbackRequest;
+use App\Jobs\NotifyEducatorNewWorkoutFeedbackJob;
 use App\Models\WorkoutFeedback;
 use Illuminate\Http\Request;
 
@@ -38,6 +39,9 @@ class WorkoutFeedbackController extends Controller
     {
         $workoutFeedbackValited = $request->validated();
         $workoutFeedback = WorkoutFeedback::create($workoutFeedbackValited);
+
+        NotifyEducatorNewWorkoutFeedbackJob::dispatch((int) $workoutFeedback->id);
+
         return response()->json(['status' => true, 'message:' => 'Feedback do treino criado com sucesso', 'DataFeedback' => $workoutFeedback], 201);
     }
 
@@ -83,5 +87,39 @@ class WorkoutFeedbackController extends Controller
     public function destroy(string $id)
     {
         //
+    }
+
+    public function newForEducator(Request $request)
+    {
+        $idEducator = request()->user()->id;
+        $after = $request->query('after'); // YYYY-MM-DD HH:mm:ss
+
+        $query = WorkoutFeedback::query()
+            ->select([
+                // ajuste o nome da tabela conforme seu banco:
+                'workout_feedback.*',
+                'patients.name as patient_name',
+                'workouts.id as workout_id',
+                'workout_items.id as workout_item_id',
+            ])
+            // ajuste os nomes conforme seu schema real:
+            ->join('workout_items', 'workout_items.id', '=', 'workout_feedback.workout_item_id')
+            ->join('workouts', 'workouts.id', '=', 'workout_items.workout_id')
+            ->join('patients', 'patients.id', '=', 'workouts.patient_id')
+            ->join('patient_registrations', 'patient_registrations.patient_id', '=', 'patients.id')
+            ->where('patient_registrations.educator_id', $idEducator)
+            ->orderBy('workout_feedback.created_at', 'desc');
+
+        if ($after) {
+            $query->where('workout_feedback.created_at', '>', $after);
+        }
+
+        $data = $query->get();
+
+        return response()->json([
+            'status' => true,
+            'data' => $data,
+            'server_time' => now()->toDateTimeString(),
+        ], 200);
     }
 }

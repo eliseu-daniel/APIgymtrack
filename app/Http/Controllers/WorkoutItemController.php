@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\CreateWorkoutItemRequest;
+use App\Jobs\NotifyPatientWorkoutItemConfirmedJob;
 use App\Models\WorkoutItem;
 
 class WorkoutItemController extends Controller
@@ -74,6 +75,14 @@ class WorkoutItemController extends Controller
         $newItemData = $request->validated();
         $newData = WorkoutItem::create($newItemData);
 
+        // Se o educador confirmou envio (true), dispara job
+        if (array_key_exists('send_notification', $newItemData) && $newItemData['send_notification']) {
+            NotifyPatientWorkoutItemConfirmedJob::dispatch(
+                (int) $newData->id,
+                (int) $newData->patient_id
+            );
+        }
+
         return response()->json(['status' => true, 'message' => 'Item de treino atualizado com sucesso!', 'ItemWorkoutData' => $newData], 200);
     }
 
@@ -89,5 +98,26 @@ class WorkoutItemController extends Controller
         $itemWorkout->update(['is_active' => false]);
 
         return response()->json(['status' => true, 'message' => 'Item desativado com sucesso'], 200);
+    }
+
+    public function notifiedForPatient()
+    {
+        $idPatient = request()->user()->id;
+
+        $data = WorkoutItem::query()
+            ->join('workouts', 'workouts.id', '=', 'workout_items.workout_id')
+            ->where('workouts.patient_id', $idPatient)
+            ->where('workout_items.send_notification', true)
+            ->orderBy('workout_items.updated_at', 'desc')
+            ->select([
+                'workout_items.*',
+                'workouts.id as workout_id',
+            ])
+            ->get();
+
+        return response()->json([
+            'status' => true,
+            'data' => $data
+        ], 200);
     }
 }

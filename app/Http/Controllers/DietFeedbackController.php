@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\CreateDietFeedbackRequest;
+use App\Jobs\NotifyEducatorNewDietFeedbackJob;
 use App\Models\DietFeedback;
 use Illuminate\Http\Request;
 
@@ -14,10 +15,25 @@ class DietFeedbackController extends Controller
     public function index()
     {
         $idEducator = request()->user()->id;
-        return response()->json(['status' => true, 'data' => DietFeedback::select('patients.name', 'diet_feedbacks.*')
-            ->join('patients', 'patients.id', '=', 'diet_feedbacks.patient_id')
+
+        $data = DietFeedback::query()
+            ->select([
+                'diet_feedback.*',
+                'diet_feedback.id as diet_feedback_id',
+                'patients.name as patient_name',
+                'diets.id as diet_id',
+            ])
+            ->join('diets', 'diets.id', '=', 'diet_feedback.diet_id')
+            ->join('patients', 'patients.id', '=', 'diets.patient_id')
+            ->join('patient_registrations', 'patient_registrations.patient_id', '=', 'patients.id')
             ->where('patient_registrations.educator_id', $idEducator)
-            ->get()], 200);
+            ->orderBy('diet_feedback.created_at', 'desc')
+            ->get();
+
+        return response()->json([
+            'status' => true,
+            'data' => $data
+        ], 200);
     }
 
     /**
@@ -37,21 +53,36 @@ class DietFeedbackController extends Controller
 
         $feedback = DietFeedback::create($validator);
 
+        // ✅ dispara job sempre
+        NotifyEducatorNewDietFeedbackJob::dispatch((int) $feedback->id);
+
         return response()->json(['status' => true, 'message' => 'Feedback de dieta criado com sucesso', 'data' => $feedback], 201);
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(string $id, string $idPatient)
+    public function show(string $id)
     {
         $idEducator = request()->user()->id;
-        return response()->json(['status' => true, 'data' => DietFeedback::select('patients.name', 'diet_feedbacks.*')
-            ->join('patients', 'patients.id', '=', 'diet_feedbacks.patient_id')
+        $data = DietFeedback::query()
+            ->select([
+                'diet_feedback.*',
+                'patients.name as patient_name',
+            ])
+            ->join('diets', 'diets.id', '=', 'diet_feedback.diet_id')
+            ->join('patients', 'patients.id', '=', 'diets.patient_id')
+            ->join('patient_registrations', 'patient_registrations.patient_id', '=', 'patients.id')
             ->where('patient_registrations.educator_id', $idEducator)
-            ->where('diet_feedbacks.id', $id)
-            ->where('patients.id', $idPatient)
-            ->get()], 200);
+            ->where('diet_feedback.id', $id)
+            ->first();
+        if (!$idEducator) {
+            return response()->json(['status' => false, 'message' => 'Antropometria não encontrada'], 404);
+        }
+        if (!$data) {
+            return response()->json(['status' => false, 'message' => 'Feedback de dieta não encontrado'], 404);
+        }
+        return response()->json(['status' => true, 'data' => $data]);
     }
 
     /**

@@ -15,7 +15,7 @@ class DietController extends Controller
     {
         $idEducator = request()->user()->id;
 
-        $diet = Diet::select('patients.name as patient_name', 'diets.*', 'meals.*')
+        $diet = Diet::select('patients.name as patient_name', 'diets.id as diet_id', 'diets.*', 'meals.id as meal_id', 'meals.name as meal_name')
             ->join('patients', 'diets.patient_id', '=', 'patients.id')
             ->join('meals', 'meals.id', '=', 'diets.meals_id')
             ->join('patient_registrations', 'patient_registrations.patient_id', '=', 'patients.id')
