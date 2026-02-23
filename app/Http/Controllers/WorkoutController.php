@@ -106,4 +106,20 @@ class WorkoutController extends Controller
         $workout->delete();
         return response()->json(['status' => true, 'message' => 'Treino deletado com sucesso'], 200);
     }
+
+    public function getForPacientWorkout()
+    {
+        $idPatient = request()->user()->id;
+        return response()->json(['status' => true, 'WorkoutData' => Workout::select(
+            'workouts.*',
+            'patients.id as patient_id',
+            'patients.name',
+            'workout_types.id as workout_type_id',
+            'workout_types.workout_type as workout_type_name'
+        )
+            ->join('patients', 'workouts.patient_id', '=', 'patients.id')
+            ->join('workout_types', 'workout_types.id', '=', 'workouts.workout_type_id')
+            ->where('workouts.patient_id', $idPatient)
+            ->orderBy('workouts.start_date', 'desc')->get()], 200);
+    }
 }

@@ -140,4 +140,19 @@ class DietItemController extends Controller
             'data' => $data,
         ], 200);
     }
+
+    public function getForPacientDietItem()
+    {
+        $idPatient = request()->user()->id;
+        return response()->json(['status' => true, 'DietItemData' => DietItem::select(
+            'diet_items.id as diet_item_id',
+            'diet_items.*',
+            'food.name as food_name'
+        )
+            ->join('food', 'diet_items.food_id', '=', 'food.id')
+            ->join('diets', 'diet_items.diet_id', '=', 'diets.id')
+            ->where('diets.patient_id', $idPatient)
+            ->orderBy('diet_items.updated_at', 'desc')
+            ->get()], 200);
+    }
 }

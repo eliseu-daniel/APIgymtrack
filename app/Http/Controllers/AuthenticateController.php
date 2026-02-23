@@ -88,7 +88,7 @@ class AuthenticateController extends Controller
 
         return response()->json([
             'status' => true,
-            'token' => $patient->createToken('api-token')->plainTextToken,
+            'token' => $patient->createToken('patient-token')->plainTextToken,
             'patient' => $patient,
         ], 200);
     }
@@ -122,7 +122,7 @@ class AuthenticateController extends Controller
 
         return response()->json([
             'status' => true,
-            'token' => $administrator->createToken('api-token')->plainTextToken,
+            'token' => $administrator->createToken('administrator-token')->plainTextToken,
             'administrator' => $administrator,
         ], 200);
     }

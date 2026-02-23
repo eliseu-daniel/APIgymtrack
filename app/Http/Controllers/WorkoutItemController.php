@@ -132,4 +132,19 @@ class WorkoutItemController extends Controller
             'data' => $data
         ], 200);
     }
+
+    public function getForPacientWorkoutItem()
+    {
+        $idPatient = request()->user()->id;
+        return response()->json(['status' => true, 'ItemWorkoutData' => WorkoutItem::select(
+            'workout_items.id as workout_item_id',
+            'workout_items.*',
+            'exercises.exercise as exercise_name'
+        )
+            ->join('exercises', 'workout_items.exercise_id', '=', 'exercises.id')
+            ->join('workouts', 'workout_items.workout_id', '=', 'workouts.id')
+            ->where('workouts.patient_id', $idPatient)
+            ->orderBy('workout_items.updated_at', 'desc')
+            ->get()], 200);
+    }
 }

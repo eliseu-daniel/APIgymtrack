@@ -112,4 +112,17 @@ class DietController extends Controller
 
         return $dateFinish;
     }
+
+    public function getForPacientDiets()
+    {
+        $idPatient = auth('patient')->id();
+
+        $diets = Diet::select('diets.id as diet_id', 'diets.*', 'meals.id as meal_id', 'meals.name as meal_name')
+            ->join('meals', 'meals.id', '=', 'diets.meals_id')
+            ->where('diets.patient_id', $idPatient)
+            ->orderBy('diets.start_date', 'desc')
+            ->get();
+
+        return response()->json(['diets' => $diets], 200);
+    }
 }
