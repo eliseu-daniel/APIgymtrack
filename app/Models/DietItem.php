@@ -9,8 +9,9 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 class DietItem extends Model
 {
     use HasFactory;
-    
+
     protected $fillable = [
+        'id',
         'diet_id',
         'food_id',
         'measure',

@@ -13,7 +13,12 @@ class ExerciseController extends Controller
      */
     public function index()
     {
-        return response()->json(['status' => true, 'Exercises' => Exercise::select('exercises.*', 'muscle_groups.*')
+        return response()->json(['status' => true, 'Exercises' => Exercise::select(
+            'exercises.id as exercise_id',
+            'exercises.*',
+            'muscle_groups.id as muscle_group_id',
+            'muscle_groups.muscle_group as muscle_group_name'
+        )
             ->join('muscle_groups', 'muscle_groups.id', '=', 'exercises.muscle_group_id')
             ->get()], 200);
     }
@@ -41,7 +46,12 @@ class ExerciseController extends Controller
      */
     public function show(string $id)
     {
-        $exercise = Exercise::select('exercises.*', 'muscle_groups.*')
+        $exercise = Exercise::select(
+            'exercises.id as exercise_id',
+            'exercises.*',
+            'muscle_groups.id as muscle_group_id',
+            'muscle_groups.muscle_group as muscle_group_name'
+        )
             ->join('muscle_groups', 'muscle_groups.id', '=', 'exercises.muscle_group_id')
             ->where('exercises.id', $id)
             ->first();

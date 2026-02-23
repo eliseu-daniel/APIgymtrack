@@ -18,10 +18,14 @@ class PatientRegistrationSeeder extends Seeder
         $patients = Patient::all();
         $educators = Educator::all();
 
+        $educatorsLimited = $educators->take(10);
+
         foreach ($patients as $patient) {
             PatientRegistration::factory()->create([
                 'patient_id' => $patient->id,
-                'educator_id' => $educators->random()->id,
+                'educator_id' => $educatorsLimited->random()->id,
+                'plan_description' => 'monthly',
+                'start_date' => now(),
             ]);
         }
     }

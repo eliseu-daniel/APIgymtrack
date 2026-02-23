@@ -15,8 +15,9 @@ class PatientWeightController extends Controller
     {
         $idEducator = request()->user()->id;
 
-        $weight = PatientWeight::select('patient_weights.*', 'patients.name')
+        $weight = PatientWeight::select('patient_weights.*', 'patients.id as patient_id', 'patients.name')
             ->join('patients', 'patient_weights.patient_id', '=', 'patients.id')
+            ->join('patient_registrations', 'patient_registrations.patient_id', '=', 'patients.id')
             ->where('patient_registrations.educator_id', $idEducator)->get();
         return response()->json(['status' => true, 'weightAll' => $weight], 200);
     }
@@ -45,7 +46,22 @@ class PatientWeightController extends Controller
      */
     public function show(string $id)
     {
-        //
+        $idEducator = request()->user()->id;
+        $weight = PatientWeight::select('patient_weights.*', 'patients.id as patient_id', 'patients.name')
+            ->join('patients', 'patient_weights.patient_id', '=', 'patients.id')
+            ->join('patient_registrations', 'patient_registrations.patient_id', '=', 'patients.id')
+            ->where('patient_registrations.educator_id', $idEducator)
+            ->where('patient_weights.id', $id)->first();
+
+
+        if (!$weight) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Peso do paciente não encontrado'
+            ], 404);
+        }
+
+        return response()->json(['status' => true, 'data' => $weight], 200);
     }
 
     /**

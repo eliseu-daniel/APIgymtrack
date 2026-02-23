@@ -14,10 +14,18 @@ class WorkoutController extends Controller
     public function index()
     {
         $idEducator = request()->user()->id;
-        return response()->json(['status' => true, 'WorkoutData' => Workout::select('workouts.*', 'patients.name', 'workout_types.name as workout_type_name')
+        return response()->json(['status' => true, 'WorkoutData' => Workout::select(
+            'workouts.*',
+            'patients.id as patient_id',
+            'patients.name',
+            'workout_types.id as workout_type_id',
+            'workout_types.workout_type as workout_type_name'
+        )
             ->join('patients', 'workouts.patient_id', '=', 'patients.id')
-            ->join('workout_types', 'workouts.workout_type_id', '=', 'workout_types.id')
-            ->where('patients.registration.educator_id', $idEducator)->get()], 200);
+            ->join('workout_types', 'workout_types.id', '=', 'workouts.workout_type_id')
+            ->join('patient_registrations', 'patient_registrations.patient_id', '=', 'patients.id')
+            ->where('patient_registrations.educator_id', $idEducator)
+            ->orderBy('workouts.start_date', 'desc')->get()], 200);
     }
 
     /**
@@ -44,11 +52,18 @@ class WorkoutController extends Controller
     public function show(string $id)
     {
         $idEducator = request()->user()->id;
-        $workout = Workout::select('workouts.*', 'patients.name', 'workout_types.name as workout_type_name')
+        $workout = Workout::select(
+            'workouts.id as workout_id',
+            'workouts.*',
+            'patients.id as patient_id',
+            'patients.name',
+            'workout_types.id as workout_type_id',
+            'workout_types.workout_type as workout_type_name'
+        )
             ->join('patients', 'workouts.patient_id', '=', 'patients.id')
-            ->join('workout_types', 'workouts.workout_type_id', '=', 'workout_types.id')
-            ->where('patients.registration.educator_id', $idEducator)
-            ->where('workouts.id', $id)
+            ->join('workout_types', 'workout_types.id', '=', 'workouts.workout_type_id')
+            ->join('patient_registrations', 'patient_registrations.patient_id', '=', 'patients.id')
+            ->where('patient_registrations.educator_id', $idEducator)
             ->first();
 
         if (!$workout) {

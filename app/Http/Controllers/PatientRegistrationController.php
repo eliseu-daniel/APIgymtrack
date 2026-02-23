@@ -17,7 +17,7 @@ class PatientRegistrationController extends Controller
     public function index()
     {
         $idEducator = request()->user()->id;
-        $patientRegistration = PatientRegistration::select('patient_registrations.*', 'patients.name', 'educators.name as educator_name')
+        $patientRegistration = PatientRegistration::select('patient_registrations.id as patient_registration_id', 'patient_registrations.*', 'patients.name', 'educators.name as educator_name')
             ->join('patients', 'patient_registrations.patient_id', '=', 'patients.id')
             ->join('educators', 'patient_registrations.educator_id', '=', 'educators.id')
             ->where('patient_registrations.educator_id', $idEducator)->get();

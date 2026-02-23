@@ -15,9 +15,18 @@ class DietItemController extends Controller
     public function index()
     {
         $idEducator = request()->user()->id;
-        return response()->json(['status' => true, 'message' => DietItem::select('patients.name', 'diet_items.*', 'diets.id')
-            ->join('patients', 'patients.id', '=', 'diet_items.patient_id')
+        return response()->json(['status' => true, 'message' => DietItem::select(
+            'diet_items.id as diet_item_id',
+            'diets.id as diet_id',
+            'food.id as food_id',
+            'patients.name',
+            'food.name as food_name',
+            'diet_items.*',
+        )
             ->join('diets', 'diets.id', '=', 'diet_items.diet_id')
+            ->join('patients', 'patients.id', '=', 'diets.patient_id')
+            ->join('patient_registrations', 'patient_registrations.patient_id', '=', 'patients.id')
+            ->join('food', 'food.id', '=', 'diet_items.food_id')
             ->where('patient_registrations.educator_id', $idEducator)
             ->get()], 200);
     }
@@ -43,16 +52,30 @@ class DietItemController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id, string $idPatient)
+    public function show(string $id)
     {
         $idEducator = request()->user()->id;
-        return response()->json(['status' => true, 'message' => DietItem::select('patients.name', 'diet_items.*', 'diets.id')
-            ->join('patients', 'patients.id', '=', 'diet_items.patient_id')
+        $dietItem = DietItem::select(
+            'diet_items.id as diet_item_id',
+            'diets.id as diet_id',
+            'food.id as food_id',
+            'patients.name',
+            'food.name as food_name',
+            'diet_items.*',
+        )
             ->join('diets', 'diets.id', '=', 'diet_items.diet_id')
+            ->join('patients', 'patients.id', '=', 'diets.patient_id')
+            ->join('patient_registrations', 'patient_registrations.patient_id', '=', 'patients.id')
+            ->join('food', 'food.id', '=', 'diet_items.food_id')
             ->where('patient_registrations.educator_id', $idEducator)
             ->where('diet_items.id', $id)
-            ->where('patients.id', $idPatient)
-            ->get()], 200);
+            ->first();
+
+        if (!$dietItem) {
+            return response()->json(['status' => false, 'message' => 'Item de dieta não encontrado.'], 404);
+        }
+
+        return response()->json(['status' => true, 'message' => $dietItem]);
     }
 
     /**

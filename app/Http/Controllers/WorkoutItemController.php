@@ -13,9 +13,16 @@ class WorkoutItemController extends Controller
      */
     public function index()
     {
-        return response()->json(['status' => true, 'ItemWorkoutData' => WorkoutItem::select('workout_items.*', 'exercises.name as exercise_name')
+        return response()->json(['status' => true, 'ItemWorkoutData' => WorkoutItem::select(
+            'workout_items.id as workout_item_id',
+            'workout_items.*',
+            'exercises.exercise as exercise_name'
+        )
             ->join('exercises', 'workout_items.exercise_id', '=', 'exercises.id')
-            ->where('patients_registration.educator_id', request()->user()->id)
+            ->join('workouts', 'workout_items.workout_id', '=', 'workouts.id')
+            ->join('patients', 'workouts.patient_id', '=', 'patients.id')
+            ->join('patient_registrations', 'patient_registrations.patient_id', '=', 'patients.id')
+            ->where('patient_registrations.educator_id', request()->user()->id)
             ->get()], 200);
     }
 
@@ -42,10 +49,15 @@ class WorkoutItemController extends Controller
      */
     public function show(string $id)
     {
-        $itemWorkout = WorkoutItem::select('workout_items.*', 'exercises.name as exercise_name')
+
+
+        $itemWorkout = WorkoutItem::select('workout_items.*', 'exercises.exercise as exercise_name')
             ->join('exercises', 'workout_items.exercise_id', '=', 'exercises.id')
+            ->join('workouts', 'workout_items.workout_id', '=', 'workouts.id')
+            ->join('patients', 'workouts.patient_id', '=', 'patients.id')
+            ->join('patient_registrations', 'patient_registrations.patient_id', '=', 'patients.id')
             ->where('workout_items.id', $id)
-            ->where('patients_registration.educator_id', request()->user()->id)
+            ->where('patient_registrations.educator_id', request()->user()->id)
             ->first();
         if (!$itemWorkout) {
             return response()->json(['status' => false, 'message' => 'Item de treino não encontrado.'], 404);

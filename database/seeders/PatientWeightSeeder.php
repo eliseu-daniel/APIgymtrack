@@ -17,7 +17,7 @@ class PatientWeightSeeder extends Seeder
         $patients = Patient::all();
 
         foreach ($patients as $patient) {
-            PatientWeight::factory()->count(5)->create([
+            PatientWeight::factory()->count(2)->create([
                 'patient_id' => $patient->id,
             ]);
         }

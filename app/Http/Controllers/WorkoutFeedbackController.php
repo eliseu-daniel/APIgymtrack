@@ -14,14 +14,29 @@ class WorkoutFeedbackController extends Controller
      */
     public function index()
     {
-        return response()->json(['status' => true, 'DataFeedback' => WorkoutFeedback::select(
-            'workout_feedbacks.*',
-            'patients.name'
-        )
-            ->join('patients', 'workout_feedbacks.patient_id', '=', 'patients.id')
-            ->join('workouts', 'workout_feedbacks.workout_id', '=', 'workouts.id')
-            ->where('patients.educator_id', request()->user()->id)
-            ->get()], 200);
+        $idEducator = request()->user()->id;
+
+        $data = WorkoutFeedback::query()
+            ->select([
+                'workout_feedback.id as workout_feedback_id',
+                'workout_feedback.*',
+                'patients.id as patient_id',
+                'patients.name as patient_name',
+                'workouts.id as workout_id',
+                'workout_items.id as workout_item_id',
+            ])
+            ->join('workout_items', 'workout_items.id', '=', 'workout_feedback.workout_item_id')
+            ->join('workouts', 'workouts.id', '=', 'workout_items.workout_id')
+            ->join('patients', 'patients.id', '=', 'workouts.patient_id')
+            ->join('patient_registrations', 'patient_registrations.patient_id', '=', 'patients.id')
+            ->where('patient_registrations.educator_id', $idEducator)
+            ->orderBy('workout_feedback.created_at', 'desc')
+            ->get();
+
+        return response()->json([
+            'status' => true,
+            'DataFeedback' => $data
+        ], 200);
     }
 
     /**
@@ -50,13 +65,20 @@ class WorkoutFeedbackController extends Controller
      */
     public function show(string $id)
     {
-        // essa poha deve ta errada mas depois eu vejo
         $idEducator = request()->user()->id;
-        $workoutFeedback = WorkoutFeedback::select('workout_feedbacks.*', 'patients.name', 'workouts.name as workout_name')
-            ->join('patients', 'workout_feedbacks.patient_id', '=', 'patients.id')
-            ->join('workouts', 'workout_feedbacks.workout_id', '=', 'workouts.id')
-            ->where('patients_registration.educator_id', $idEducator)
-            ->where('workout_feedbacks.id', $id)
+        $workoutFeedback = WorkoutFeedback::select(
+            'workout_feedback.id as workout_feedback_id',
+            'workout_feedback.*',
+            'patients.id as patient_id',
+            'patients.name as patient_name',
+            'workouts.id as workout_id',
+            'workout_items.id as workout_item_id',
+        )
+            ->join('workout_items', 'workout_items.id', '=', 'workout_feedback.workout_item_id')
+            ->join('workouts', 'workouts.id', '=', 'workout_items.workout_id')
+            ->join('patients', 'patients.id', '=', 'workouts.patient_id')
+            ->join('patient_registrations', 'patient_registrations.patient_id', '=', 'patients.id')
+            ->where('patient_registrations.educator_id', $idEducator)
             ->first();
 
         if (!$workoutFeedback) {
