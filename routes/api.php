@@ -29,6 +29,8 @@ use Illuminate\Support\Facades\Route;
 
 Route::post('/register', [AuthenticateController::class, 'register'])->name('register');
 Route::post('/login', [AuthenticateController::class, 'login']);
+Route::post('/loginPatient', [AuthenticateController::class, 'loginPatient']);
+Route::post('/loginAdministrator', [AuthenticateController::class, 'loginAdministrator']);
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('logout', [AuthenticateController::class, 'logout']);

@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\CreateAuthenticateRequest;
+use App\Models\Administrator;
 use App\Models\Educator;
+use App\Models\Patient;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
@@ -62,5 +64,66 @@ class AuthenticateController extends Controller
         $request->user()->currentAccessToken()->delete();
 
         return response()->json(['message' => 'Logout realizado com sucesso'], 200);
+    }
+
+    public function loginPatient(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email',
+        ]);
+
+        $patient = Patient::where('email', $request->email)->first();
+
+        if (!$patient) {
+            return response()->json([
+                'message' => 'E-mail não encontrado. Verifique e tente novamente.'
+            ], 404);
+        }
+
+        if (!$patient->is_active) {
+            return response()->json([
+                'message' => 'Paciente inativo. Entre em contato com o suporte.'
+            ], 403);
+        }
+
+        return response()->json([
+            'status' => true,
+            'token' => $patient->createToken('api-token')->plainTextToken,
+            'patient' => $patient,
+        ], 200);
+    }
+
+    public function loginAdministrator(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email',
+            'password' => 'required|string|min:6',
+        ]);
+
+        $administrator = Administrator::where('email', $request->email)->first();
+
+        if (!$administrator) {
+            return response()->json([
+                'message' => 'E-mail não encontrado. Verifique e tente novamente.'
+            ], 404);
+        }
+
+        if (!Hash::check($request->password, $administrator->password)) {
+            return response()->json([
+                'message' => 'Senha incorreta. Tente novamente.'
+            ], 401);
+        }
+
+        if (!$administrator->is_admin) {
+            return response()->json([
+                'message' => 'Você não é um administrador. Entre em contato com o suporte.'
+            ], 403);
+        }
+
+        return response()->json([
+            'status' => true,
+            'token' => $administrator->createToken('api-token')->plainTextToken,
+            'administrator' => $administrator,
+        ], 200);
     }
 }
