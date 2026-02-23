@@ -66,13 +66,17 @@ Route::middleware('auth:sanctum')->prefix('educators')->group(function () {
     Route::get('workout-type/{id}', [WorkoutTypeController::class, 'show']);
     Route::get('muscle-groups', [MuscleGroupController::class, 'index']);
     Route::get('muscle-groups/{id}', [MuscleGroupController::class, 'show']);
+
+    // Route::apiResource('administrators', AdministratorController::class); // uso so pra teste, depois retirar
 });
 
 Route::middleware('auth:patient')->prefix('patients')->group(function () {
     Route::get('/diets', [DietController::class, 'getForPacientDiets']);
     Route::get('/diet-items', [DietItemController::class, 'getForPacientDietItem']);
-    Route::get('/workouts', [WorkoutController::class, 'getWorkouts']);
+    Route::get('/workouts', [WorkoutController::class, 'getForPacientWorkout']);
     Route::get('/workout-items', [WorkoutItemController::class, 'getForPacientWorkoutItem']);
+
+    Route::post('logout', [AuthenticateController::class, 'logout']);
 });
 
 Route::middleware('auth:administrator')->prefix('administrators')->group(function () {
@@ -82,4 +86,6 @@ Route::middleware('auth:administrator')->prefix('administrators')->group(functio
     Route::apiResource('meals', MealController::class);
     Route::apiResource('workout-type', WorkoutTypeController::class);
     Route::apiResource('muscle-groups', MuscleGroupController::class);
+
+    Route::post('logout', [AuthenticateController::class, 'logout']);
 });

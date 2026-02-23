@@ -61,9 +61,24 @@ class AuthenticateController extends Controller
 
     public function logout(Request $request)
     {
-        $request->user()->currentAccessToken()->delete();
+        $user =
+            auth()->user() // guard padrão (educator no seu caso)
+            ?? auth('patient')->user()
+            ?? auth('administrator')->user();
 
-        return response()->json(['message' => 'Logout realizado com sucesso'], 200);
+        if (!$user) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Usuário não autenticado'
+            ], 401);
+        }
+
+        $user->currentAccessToken()->delete();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Logout realizado com sucesso'
+        ], 200);
     }
 
     public function loginPatient(Request $request)
