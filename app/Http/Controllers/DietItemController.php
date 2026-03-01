@@ -22,11 +22,14 @@ class DietItemController extends Controller
             'patients.name',
             'food.name as food_name',
             'diet_items.*',
+            'meals.id as meal_id',
+            'meals.name as meal_name',
         )
             ->join('diets', 'diets.id', '=', 'diet_items.diet_id')
             ->join('patients', 'patients.id', '=', 'diets.patient_id')
             ->join('patient_registrations', 'patient_registrations.patient_id', '=', 'patients.id')
             ->join('food', 'food.id', '=', 'diet_items.food_id')
+            ->join('meals', 'meals.id', '=', 'diet_items.meals_id')
             ->where('patient_registrations.educator_id', $idEducator)
             ->get()], 200);
     }
@@ -61,12 +64,15 @@ class DietItemController extends Controller
             'food.id as food_id',
             'patients.name',
             'food.name as food_name',
+            'meals.id as meal_id',
+            'meals.name as meal_name',
             'diet_items.*',
         )
             ->join('diets', 'diets.id', '=', 'diet_items.diet_id')
             ->join('patients', 'patients.id', '=', 'diets.patient_id')
             ->join('patient_registrations', 'patient_registrations.patient_id', '=', 'patients.id')
             ->join('food', 'food.id', '=', 'diet_items.food_id')
+            ->join('meals', 'meals.id', '=', 'diet_items.meals_id')
             ->where('patient_registrations.educator_id', $idEducator)
             ->where('diet_items.id', $id)
             ->first();
@@ -145,20 +151,35 @@ class DietItemController extends Controller
     {
         $idPatient = request()->user()->id;
 
-        $dietItemForMeal =  DietItem::select(
+        $items = DietItem::select(
             'diet_items.id as diet_item_id',
             'diet_items.*',
             'food.name as food_name',
             'meals.id as meal_id',
-            'meals.name as meal_name',
+            'meals.name as meal_name'
         )
             ->join('food', 'diet_items.food_id', '=', 'food.id')
             ->join('diets', 'diet_items.diet_id', '=', 'diets.id')
-            ->join('meals', 'diets.meals_id', '=', 'meals.id')
+            ->join('meals', 'diet_items.meals_id', '=', 'meals.id')
             ->where('diets.patient_id', $idPatient)
             ->orderBy('meals.id', 'asc')
+            ->orderBy('diet_items.created_at', 'asc')
             ->get();
 
-        return response()->json(['status' => true, 'DietItemData' => $dietItemForMeal], 200);
+        $grouped = $items->groupBy('meal_name')->map(function ($group) {
+            return $group->map(function ($item) {
+                unset(
+                    $item->meal_id,
+                    $item->meal_name,
+                    $item->diet_id,
+                );
+                return $item;
+            })->values();
+        });
+
+        return response()->json([
+            'status' => true,
+            'DietItemData' => $grouped
+        ], 200);
     }
 }

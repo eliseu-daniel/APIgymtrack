@@ -19,7 +19,6 @@ class DietSeeder extends Seeder
         foreach ($patients as $patient) {
             $diet = Diet::factory()->create([
                 'patient_id' => $patient->id,
-                'meals_id' => $meals->random()->id,
             ]);
 
             DietItem::factory()->count(3)->create(['diet_id' => $diet->id]);

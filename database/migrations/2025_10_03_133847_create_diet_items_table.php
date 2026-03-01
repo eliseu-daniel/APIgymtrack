@@ -15,6 +15,9 @@ return new class extends Migration
             $table->id();
             $table->foreignId('diet_id')->constrained('diets')->onDelete('cascade');
             $table->foreignId('food_id')->constrained('food')->onDelete('cascade');
+            $table->foreignId('meals_id')->constrained('meals')->onDelete('cascade');
+            $table->time('meal_time');
+            $table->integer('quantity');
             $table->enum('measure', ['und', 'gr', 'ml', 'l']);
             $table->string('others')->nullable();
             $table->boolean('send_notification')->default(false);

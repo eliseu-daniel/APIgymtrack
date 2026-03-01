@@ -12,8 +12,6 @@ class Diet extends Model
     
     protected $fillable = [
         'patient_id',
-        'meals_id',
-        'meal_time',
         'diet_type',
         'goal_weight',
         'objective',

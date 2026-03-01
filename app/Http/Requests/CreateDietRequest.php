@@ -23,8 +23,6 @@ class CreateDietRequest extends FormRequest
     {
         return [
             'patient_id'        => 'required|exists:patients,id',
-            'meals_id'          => 'required|exists:meals,id',
-            'meal_time'         => 'required',
             'diet_type'         => 'nullable|string',
             'goal_weight'       => 'nullable|string',
             'objective'         => 'nullable|string',
@@ -42,8 +40,6 @@ class CreateDietRequest extends FormRequest
     {
         return [
             'patient_id' => 'O campo paciente é obrigatório e deve existir na tabela pacientes.',
-            'meals_id' => 'O campo refeição é obrigatório e deve existir na tabela refeições.',
-            'meal_time' => 'O campo horário da refeição é obrigatório.',
             'calories' => 'O campo calorias é obrigatório e deve ser um número inteiro.',
             'proteins' => 'O campo proteínas é obrigatório e deve ser um número inteiro.',
             'carbohydrates' => 'O campo carboidratos é obrigatório e deve ser um número inteiro.',

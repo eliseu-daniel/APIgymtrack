@@ -18,9 +18,7 @@ class DietFactory extends Factory
 
         return [
             'patient_id' => Patient::factory(),
-            'meals_id' => Meal::query()->inRandomOrder()->value('id') ?? 1,
-
-            'meal_time' => fake()->time('H:i:s'),
+            
 
             'diet_type' => fake()->optional()->word(),
             'goal_weight' => fake()->optional()->randomFloat(1, 45, 140),

@@ -15,9 +15,8 @@ class DietController extends Controller
     {
         $idEducator = request()->user()->id;
 
-        $diet = Diet::select('patients.name as patient_name', 'diets.id as diet_id', 'diets.*', 'meals.id as meal_id', 'meals.name as meal_name')
+        $diet = Diet::select('patients.name as patient_name', 'diets.id as diet_id', 'diets.*',)
             ->join('patients', 'diets.patient_id', '=', 'patients.id')
-            ->join('meals', 'meals.id', '=', 'diets.meals_id')
             ->join('patient_registrations', 'patient_registrations.patient_id', '=', 'patients.id')
             ->where('patient_registrations.educator_id', $idEducator)
             ->orderBy('diets.start_date', 'desc')
@@ -55,10 +54,8 @@ class DietController extends Controller
         $diet = Diet::select([
             'diets.*',
             'patients.name as patient_name',
-            'meals.name as meal_name',
         ])
             ->join('patients', 'diets.patient_id', '=', 'patients.id')
-            ->join('meals', 'meals.id', '=', 'diets.meals_id')
             ->join('patient_registrations', 'patient_registrations.patient_id', '=', 'patients.id')
             ->where('patient_registrations.educator_id', $idEducator)
             ->where('diets.id', $id)
@@ -117,8 +114,7 @@ class DietController extends Controller
     {
         $idPatient = auth('patient')->id();
 
-        $diets = Diet::select('diets.id as diet_id', 'diets.*', 'meals.id as meal_id', 'meals.name as meal_name')
-            ->join('meals', 'meals.id', '=', 'diets.meals_id')
+        $diets = Diet::select('diets.id as diet_id', 'diets.*', )
             ->where('diets.patient_id', $idPatient)
             ->orderBy('diets.start_date', 'desc')
             ->get();
