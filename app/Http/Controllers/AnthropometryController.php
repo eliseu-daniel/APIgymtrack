@@ -42,7 +42,7 @@ class AnthropometryController extends Controller
      */
     public function store(CreateAnthropometryRequest $request)
     {
-        $validator = $request->validate();
+        $validator = $request->validated();
         $anthopometry = Anthropometry::create($validator);
         return response()->json(['status' => true, 'message' => 'Antropometria criada com sucesso', 'data' => $anthopometry], 201);
     }

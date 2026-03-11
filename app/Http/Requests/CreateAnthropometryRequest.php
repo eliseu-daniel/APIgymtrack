@@ -22,7 +22,7 @@ class CreateAnthropometryRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'patient_id'                => 'request|patients,id',
+            'patient_id' => 'required|exists:patients,id',
             'weights_initial'           => 'required|decimal:0,2',
             'height'                    => 'required|decimal:0,2',
             'body_fat'                  => 'required|decimal:0,2',
