@@ -115,4 +115,19 @@ class PatientController extends Controller
             }
         }
     }
+
+    public function PatientsForEducator()
+    {
+        $idEducator = request()->user()->id;
+
+        $patients = Patient::select('patients.*')
+            ->join('patient_registrations', 'patients.id', '=', 'patient_registrations.patient_id')
+            ->where('patient_registrations.educator_id', $idEducator)
+            ->get();
+
+        return response()->json([
+            'status' => true,
+            'data' => $patients
+        ], 200);
+    }
 }
