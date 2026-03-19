@@ -39,8 +39,8 @@ class DietController extends Controller
      */
     public function store(CreateDietRequest $request)
     {
-        $request->validated();
-        $diet = Diet::create();
+        $validated = $request->validated();
+        $diet = Diet::create($validated);
         return response()->json(['status' => true, 'message' => 'Dieta criada com sucesso', 'data' => $diet], 201);
     }
 

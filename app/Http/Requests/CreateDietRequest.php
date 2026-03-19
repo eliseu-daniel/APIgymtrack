@@ -36,7 +36,7 @@ class CreateDietRequest extends FormRequest
         ];
     }
 
-    public function message(): array
+    public function messages(): array
     {
         return [
             'patient_id' => 'O campo paciente é obrigatório e deve existir na tabela pacientes.',

@@ -45,7 +45,7 @@ Route::middleware('auth:sanctum')->prefix('educators')->group(function () {
     Route::get('notifications/diet-feedback', [DietFeedbackController::class, 'newForEducator']);
     Route::get('notifications/workout-feedback', [WorkoutFeedbackController::class, 'newForEducator']);
     Route::apiResource('patients', PatientController::class);
-    Route::get('patients/for-educator', [PatientController::class, 'PatientsForEducator']);
+    Route::get('patient/for-educator', [PatientController::class, 'PatientsForEducator']);
     Route::get('notifications/diet-items', [DietItemController::class, 'notifiedForPatient']);
     Route::get('notifications/workout-items', [WorkoutItemController::class, 'notifiedForPatient']);
     Route::apiResource('patient-registrations', PatientRegistrationController::class);
