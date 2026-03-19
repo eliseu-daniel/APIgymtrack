@@ -9,10 +9,10 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 class PatientWeight extends Model
 {
     use HasFactory;
-    
+
     protected $fillable = [
         'weight',
-        'id_patient',
+        'patient_id',
         'current_date',
     ];
 }

@@ -50,7 +50,11 @@ Route::middleware('auth:sanctum')->prefix('educators')->group(function () {
     Route::get('notifications/workout-items', [WorkoutItemController::class, 'notifiedForPatient']);
     Route::apiResource('patient-registrations', PatientRegistrationController::class);
     Route::apiResource('patient-weights', PatientWeightController::class);
+    
     Route::apiResource('progress-charts', ProgressChartController::class);
+    Route::get('progress/patients', [ProgressChartController::class, 'patients']);
+    Route::get('progress/reports', [ProgressChartController::class, 'reports']);
+
     Route::apiResource('workouts', WorkoutController::class);
     Route::apiResource('workout-feedbacks', WorkoutFeedbackController::class);
     Route::apiResource('workout-feedback-notifications', WorkoutFeedbackNotificationController::class);
@@ -90,3 +94,5 @@ Route::middleware('auth:administrator')->prefix('administrators')->group(functio
 
     Route::post('logout', [AuthenticateController::class, 'logout']);
 });
+
+

@@ -23,7 +23,7 @@ class CreatePatientWeightRequest extends FormRequest
     {
         return [
             "weight" => ["required", "numeric"],
-            "id_patient" => ["required", "integer", "exists:patients,id"],
+            "patient_id" => ["required", "integer", "exists:patients,id"],
             "current_date" => ["required", "date"],
         ];
     }
@@ -33,9 +33,9 @@ class CreatePatientWeightRequest extends FormRequest
         return [
             "weight.required" => "O campo peso é obrigatório.",
             "weight.numeric" => "O campo peso deve ser um número válido.",
-            "id_patient.required" => "O campo ID do paciente é obrigatório.",
-            "id_patient.integer" => "O campo ID do paciente deve ser um número inteiro.",
-            "id_patient.exists" => "O paciente com o ID fornecido não existe.",
+            "patient_id.required" => "O campo ID do paciente é obrigatório.",
+            "patient_id.integer" => "O campo ID do paciente deve ser um número inteiro.",
+            "patient_id.exists" => "O paciente com o ID fornecido não existe.",
             "current_date.required" => "O campo data atual é obrigatório.",
             "current_date.date" => "O campo data atual deve ser uma data válida.",
         ];
