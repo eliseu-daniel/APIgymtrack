@@ -15,6 +15,7 @@ class WorkoutController extends Controller
     {
         $idEducator = request()->user()->id;
         return response()->json(['status' => true, 'WorkoutData' => Workout::select(
+            'workouts.id as workout_id',
             'workouts.*',
             'patients.id as patient_id',
             'patients.name',
@@ -64,6 +65,7 @@ class WorkoutController extends Controller
             ->join('workout_types', 'workout_types.id', '=', 'workouts.workout_type_id')
             ->join('patient_registrations', 'patient_registrations.patient_id', '=', 'patients.id')
             ->where('patient_registrations.educator_id', $idEducator)
+            ->where('workouts.id', $id)
             ->first();
 
         if (!$workout) {
