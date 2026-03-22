@@ -6,6 +6,7 @@ use App\Models\DietFeedback;
 use App\Models\Educator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rule;
 
 class EducatorController extends Controller
 {
@@ -58,23 +59,49 @@ class EducatorController extends Controller
     public function update(Request $request, string $id)
     {
         $educator = Educator::find($id);
+
         if (!$educator) {
-            return response()->json(['status' => false, 'message' => 'Educador não encontrado.'], 404);
+            return response()->json([
+                'status' => false,
+                'message' => 'Educador não encontrado.'
+            ], 404);
         }
 
         $request->validate([
             'name' => 'sometimes|required|string|max:255',
-            'email' => 'sometimes|required|email|unique:educators,email,' . $id,
+            'email' => [
+                'sometimes',
+                'required',
+                'email',
+                Rule::unique('educators', 'email')->ignore($id),
+            ],
             'phone' => 'sometimes|required|string|max:20',
             'password' => 'sometimes|required|string|min:6',
             'is_active' => 'sometimes|required|boolean',
         ]);
 
-        $educator->update($request->only(['name', 'email', 'phone', 'password' => Hash::make($request->password), 'is_active']));
+        $data = $request->only([
+            'name',
+            'email',
+            'phone',
+            'is_active',
+        ]);
 
-        $educatorUpdated = Educator::select('name', 'email', 'phone', 'is_active')->where('id', $id)->first();
+        if ($request->filled('password')) {
+            $data['password'] = Hash::make($request->password);
+        }
 
-        return response()->json(['status' => true, 'message' => 'Educador atualizado com sucesso.', 'educatorData' => $educatorUpdated], 200);
+        $educator->update($data);
+
+        $educatorUpdated = Educator::select('name', 'email', 'phone', 'is_active')
+            ->where('id', $id)
+            ->first();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Educador atualizado com sucesso.',
+            'educatorData' => $educatorUpdated
+        ], 200);
     }
 
     /**
