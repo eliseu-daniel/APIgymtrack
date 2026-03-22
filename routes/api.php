@@ -42,15 +42,13 @@ Route::middleware('auth:sanctum')->prefix('educators')->group(function () {
     Route::apiResource('diet-items', DietItemController::class);
     Route::apiResource('diet-notifications', DietNotificationController::class);
     Route::apiResource('educators', EducatorController::class);
-    Route::get('notifications/diet-feedback', [DietFeedbackController::class, 'newForEducator']);
+    Route::get('notifications/diet-feedback', [DietFeedbackNotificationController::class, 'dietFeedback']);
     Route::get('notifications/workout-feedback', [WorkoutFeedbackController::class, 'newForEducator']);
     Route::apiResource('patients', PatientController::class);
     Route::get('patient/for-educator', [PatientController::class, 'PatientsForEducator']);
-    Route::get('notifications/diet-items', [DietItemController::class, 'notifiedForPatient']);
-    Route::get('notifications/workout-items', [WorkoutItemController::class, 'notifiedForPatient']);
     Route::apiResource('patient-registrations', PatientRegistrationController::class);
     Route::apiResource('patient-weights', PatientWeightController::class);
-    
+
     Route::apiResource('progress-charts', ProgressChartController::class);
     Route::get('progress/patients', [ProgressChartController::class, 'patients']);
     Route::get('progress/reports', [ProgressChartController::class, 'reports']);
@@ -80,6 +78,8 @@ Route::middleware('auth:patient')->prefix('patients')->group(function () {
     Route::get('/diet-items', [DietItemController::class, 'getForPacientDietItem']);
     Route::get('/workouts', [WorkoutController::class, 'getForPacientWorkout']);
     Route::get('/workout-items', [WorkoutItemController::class, 'getForPacientWorkoutItem']);
+    Route::get('notifications/diet-items', [DietItemController::class, 'notifiedForPatient']);
+    Route::get('notifications/workout-items', [WorkoutItemController::class, 'notifiedForPatient']);
 
     Route::post('logout', [AuthenticateController::class, 'logout']);
 });
@@ -94,5 +94,3 @@ Route::middleware('auth:administrator')->prefix('administrators')->group(functio
 
     Route::post('logout', [AuthenticateController::class, 'logout']);
 });
-
-

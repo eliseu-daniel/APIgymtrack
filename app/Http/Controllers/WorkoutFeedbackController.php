@@ -6,6 +6,7 @@ use App\Http\Requests\CreateWorkoutFeedbackRequest;
 use App\Jobs\NotifyEducatorNewWorkoutFeedbackJob;
 use App\Models\WorkoutFeedback;
 use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\JsonResponse;
 
 class WorkoutFeedbackController extends Controller
 {
@@ -50,14 +51,23 @@ class WorkoutFeedbackController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(CreateWorkoutFeedbackRequest $request)
+    public function store(CreateWorkoutFeedbackRequest $request): JsonResponse
     {
-        $workoutFeedbackValited = $request->validated();
-        $workoutFeedback = WorkoutFeedback::create($workoutFeedbackValited);
+        $workoutFeedbackValidated = $request->validated();
+
+        $workoutFeedback = WorkoutFeedback::create([
+            'workout_item_id' => $workoutFeedbackValidated['workout_item_id'],
+            'comment' => $workoutFeedbackValidated['comment'],
+            'send_notification' => $workoutFeedbackValidated['send_notification'] ?? 1,
+        ]);
 
         NotifyEducatorNewWorkoutFeedbackJob::dispatch((int) $workoutFeedback->id);
 
-        return response()->json(['status' => true, 'message:' => 'Feedback do treino criado com sucesso', 'DataFeedback' => $workoutFeedback], 201);
+        return response()->json([
+            'status' => true,
+            'message' => 'Feedback do treino criado com sucesso',
+            'DataFeedback' => $workoutFeedback
+        ], 201);
     }
 
     /**
@@ -79,6 +89,7 @@ class WorkoutFeedbackController extends Controller
             ->join('patients', 'patients.id', '=', 'workouts.patient_id')
             ->join('patient_registrations', 'patient_registrations.patient_id', '=', 'patients.id')
             ->where('patient_registrations.educator_id', $idEducator)
+            ->where('workout_feedback.id', $id)
             ->first();
 
         if (!$workoutFeedback) {

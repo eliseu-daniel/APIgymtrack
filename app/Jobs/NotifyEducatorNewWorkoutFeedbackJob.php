@@ -18,16 +18,27 @@ class NotifyEducatorNewWorkoutFeedbackJob implements ShouldQueue
 
     public function handle(): void
     {
-        // Sem persistência: o front detecta "novos" via created_at (endpoint).
-        // Job fica como gancho p/ log / telemetria / broadcast futuro.
-        $exists = WorkoutFeedback::query()
-            ->where('id', $this->workoutFeedbackId)
-            ->exists();
+        $feedback = WorkoutFeedback::query()
+            ->with(['workoutItem.workout.patient.registrations'])
+            ->find($this->workoutFeedbackId);
 
-        if ($exists) {
-            Log::info('Novo workout feedback criado', [
-                'workout_feedback_id' => $this->workoutFeedbackId,
-            ]);
+        if (!$feedback) {
+            return;
         }
+
+        $educatorIds = $feedback->workoutItem?->workout?->patient?->registrations
+            ?->pluck('educator_id')
+            ->filter()
+            ->unique()
+            ->values()
+            ->toArray() ?? [];
+
+        Log::info('Novo workout feedback criado', [
+            'workout_feedback_id' => $feedback->id,
+            'workout_item_id' => $feedback->workout_item_id,
+            'patient_id' => $feedback->workoutItem?->workout?->patient?->id,
+            'educator_ids' => $educatorIds,
+            'created_at' => $feedback->created_at,
+        ]);
     }
 }

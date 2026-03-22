@@ -18,18 +18,27 @@ class NotifyEducatorNewDietFeedbackJob implements ShouldQueue
 
     public function handle(): void
     {
-        // Como você NÃO quer tabela nova nem Redis,
-        // a "notificação" pro front será derivada do created_at via endpoint.
-        // Então o Job pode ficar como gancho (log/telemetria/integração futura).
+        $feedback = DietFeedback::query()
+            ->with(['diet.patient.registrations'])
+            ->find($this->dietFeedbackId);
 
-        $exists = DietFeedback::query()
-            ->where('id', $this->dietFeedbackId)
-            ->exists();
-
-        if ($exists) {
-            Log::info('Novo diet feedback criado', [
-                'diet_feedback_id' => $this->dietFeedbackId,
-            ]);
+        if (!$feedback) {
+            return;
         }
+
+        $educatorIds = $feedback->diet?->patient?->registrations
+            ?->pluck('educator_id')
+            ->filter()
+            ->unique()
+            ->values()
+            ->toArray() ?? [];
+
+        Log::info('Novo diet feedback criado', [
+            'diet_feedback_id' => $feedback->id,
+            'diet_id' => $feedback->diet_id,
+            'patient_id' => $feedback->diet?->patient?->id,
+            'educator_ids' => $educatorIds,
+            'created_at' => $feedback->created_at,
+        ]);
     }
 }

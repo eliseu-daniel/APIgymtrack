@@ -51,12 +51,19 @@ class DietFeedbackController extends Controller
     {
         $validator = $request->validate();
 
-        $feedback = DietFeedback::create($validator);
+        $feedback = DietFeedback::create([
+            'diet_id' => $validator['diet_id'],
+            'comment' => $validator['comment'],
+            'send_notification' => $validator['send_notification'] ?? 1,
+        ]);
 
-        // ✅ dispara job sempre
         NotifyEducatorNewDietFeedbackJob::dispatch((int) $feedback->id);
 
-        return response()->json(['status' => true, 'message' => 'Feedback de dieta criado com sucesso', 'data' => $feedback], 201);
+        return response()->json([
+            'status' => true,
+            'message' => 'Feedback de dieta criado com sucesso',
+            'data' => $feedback
+        ], 201);
     }
 
     /**

@@ -128,23 +128,36 @@ class DietItemController extends Controller
 
     public function notifiedForPatient(Request $request)
     {
-        $idPatient = request()->user()->id;
+        $patientId = $request->user()->id;
 
         $data = DietItem::query()
-            ->join('diets', 'diets.id', '=', 'diet_items.diet_id')
-            ->where('diets.patient_id', $idPatient)
-            ->where('diet_items.send_notification', true)
-            ->orderBy('diet_items.updated_at', 'desc')
             ->select([
-                'diet_items.*',
+                'diet_items.id as diet_item_id',
+                'diet_items.meal_time',
+                'diet_items.send_notification',
+                'diet_items.created_at',
                 'diets.id as diet_id',
             ])
-            ->get();
+            ->join('diets', 'diets.id', '=', 'diet_items.diet_id')
+            ->where('diets.patient_id', $patientId)
+            ->where('diet_items.send_notification', 1)
+            ->orderByDesc('diet_items.created_at')
+            ->get()
+            ->map(function ($item) {
+                return [
+                    'id' => 'diet-item-' . $item->diet_item_id,
+                    'type' => 'diet-item',
+                    'title' => 'Nova atualização na dieta',
+                    'message' => 'Seu plano alimentar foi atualizado.',
+                    'created_at' => $item->created_at,
+                    'read' => false,
+                    'diet_id' => $item->diet_id,
+                    'diet_item_id' => $item->diet_item_id,
+                ];
+            })
+            ->values();
 
-        return response()->json([
-            'status' => true,
-            'data' => $data,
-        ], 200);
+        return response()->json($data, 200);
     }
 
     public function getForPacientDietItem()

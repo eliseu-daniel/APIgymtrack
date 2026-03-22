@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Laravel\Sanctum\HasApiTokens;
 
 class Patient extends Authenticatable
@@ -21,4 +22,9 @@ class Patient extends Authenticatable
         'allergies',
         'is_active',
     ];
+
+    public function registrations(): HasMany
+    {
+        return $this->hasMany(PatientRegistration::class, 'patient_id');
+    }
 }

@@ -66,6 +66,7 @@ class WorkoutController extends Controller
             ->join('patient_registrations', 'patient_registrations.patient_id', '=', 'patients.id')
             ->where('patient_registrations.educator_id', $idEducator)
             ->where('workouts.id', $id)
+            
             ->first();
 
         if (!$workout) {

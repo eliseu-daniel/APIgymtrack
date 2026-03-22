@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\CreateWorkoutItemRequest;
 use App\Jobs\NotifyPatientWorkoutItemConfirmedJob;
 use App\Models\WorkoutItem;
+use Symfony\Component\HttpFoundation\Request;
 
 class WorkoutItemController extends Controller
 {
@@ -112,25 +113,37 @@ class WorkoutItemController extends Controller
         return response()->json(['status' => true, 'message' => 'Item desativado com sucesso'], 200);
     }
 
-    public function notifiedForPatient()
+    public function notifiedForPatient(Request $request)
     {
-        $idPatient = request()->user()->id;
+        $patientId = $request->user()->id;
 
         $data = WorkoutItem::query()
-            ->join('workouts', 'workouts.id', '=', 'workout_items.workout_id')
-            ->where('workouts.patient_id', $idPatient)
-            ->where('workout_items.send_notification', true)
-            ->orderBy('workout_items.updated_at', 'desc')
             ->select([
-                'workout_items.*',
+                'workout_items.id as workout_item_id',
+                'workout_items.send_notification',
+                'workout_items.created_at',
                 'workouts.id as workout_id',
             ])
-            ->get();
+            ->join('workouts', 'workouts.id', '=', 'workout_items.workout_id')
+            ->where('workouts.patient_id', $patientId)
+            ->where('workout_items.send_notification', 1)
+            ->orderByDesc('workout_items.created_at')
+            ->get()
+            ->map(function ($item) {
+                return [
+                    'id' => 'workout-item-' . $item->workout_item_id,
+                    'type' => 'workout-item',
+                    'title' => 'Nova atualização no treino',
+                    'message' => 'Seu treino foi atualizado.',
+                    'created_at' => $item->created_at,
+                    'read' => false,
+                    'workout_id' => $item->workout_id,
+                    'workout_item_id' => $item->workout_item_id,
+                ];
+            })
+            ->values();
 
-        return response()->json([
-            'status' => true,
-            'data' => $data
-        ], 200);
+        return response()->json($data, 200);
     }
 
     public function getForPacientWorkoutItem()
