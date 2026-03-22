@@ -80,6 +80,9 @@ Route::middleware('auth:patient')->prefix('patients')->group(function () {
     Route::get('/workout-items', [WorkoutItemController::class, 'getForPacientWorkoutItem']);
     Route::get('notifications/diet-items', [DietItemController::class, 'notifiedForPatient']);
     Route::get('notifications/workout-items', [WorkoutItemController::class, 'notifiedForPatient']);
+    Route::post('diet-feedbacks', [DietFeedbackController::class, 'store']);
+    Route::post('workout-feedbacks', [WorkoutFeedbackController::class, 'store']);
+
 
     Route::post('logout', [AuthenticateController::class, 'logout']);
 });

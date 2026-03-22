@@ -49,7 +49,7 @@ class DietFeedbackController extends Controller
      */
     public function store(CreateDietFeedbackRequest $request)
     {
-        $validator = $request->validate();
+        $validator = $request->validated();
 
         $feedback = DietFeedback::create([
             'diet_id' => $validator['diet_id'],

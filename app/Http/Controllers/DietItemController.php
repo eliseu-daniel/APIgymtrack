@@ -184,7 +184,6 @@ class DietItemController extends Controller
                 unset(
                     $item->meal_id,
                     $item->meal_name,
-                    $item->diet_id,
                 );
                 return $item;
             })->values();

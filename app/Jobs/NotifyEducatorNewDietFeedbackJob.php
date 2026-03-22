@@ -19,24 +19,32 @@ class NotifyEducatorNewDietFeedbackJob implements ShouldQueue
     public function handle(): void
     {
         $feedback = DietFeedback::query()
-            ->with(['diet.patient.registrations'])
-            ->find($this->dietFeedbackId);
+            ->select(
+                'diet_feedback.id',
+                'diet_feedback.diet_id',
+                'diet_feedback.created_at',
+                'diets.patient_id'
+            )
+            ->join('diets', 'diets.id', '=', 'diet_feedback.diet_id')
+            ->where('diet_feedback.id', $this->dietFeedbackId)
+            ->first();
 
         if (!$feedback) {
             return;
         }
 
-        $educatorIds = $feedback->diet?->patient?->registrations
-            ?->pluck('educator_id')
+        $educatorIds = \App\Models\PatientRegistration::query()
+            ->where('patient_id', $feedback->patient_id)
+            ->pluck('educator_id')
             ->filter()
             ->unique()
             ->values()
-            ->toArray() ?? [];
+            ->toArray();
 
         Log::info('Novo diet feedback criado', [
             'diet_feedback_id' => $feedback->id,
             'diet_id' => $feedback->diet_id,
-            'patient_id' => $feedback->diet?->patient?->id,
+            'patient_id' => $feedback->patient_id,
             'educator_ids' => $educatorIds,
             'created_at' => $feedback->created_at,
         ]);
