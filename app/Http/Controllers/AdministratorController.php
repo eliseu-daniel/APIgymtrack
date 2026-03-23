@@ -30,7 +30,7 @@ class AdministratorController extends Controller
      */
     public function store(CreateAdministratorRequest $request)
     {
-        $validator = $request->validate();
+        $validator = $request->validated();
 
         $adm = Administrator::create($validator, [
             'password' => Hash::make($request->password),

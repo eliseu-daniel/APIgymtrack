@@ -22,7 +22,8 @@ class CreatePatientRequest extends FormRequest
      */
     public function rules(): array
     {
-        $patientId = $this->route('id');
+        $patientRoute = $this->route('patient');
+        $patientId = is_object($patientRoute) ? $patientRoute->id : ($patientRoute ?? $this->route('id'));
 
         return [
             'name' => 'required|string|max:255',

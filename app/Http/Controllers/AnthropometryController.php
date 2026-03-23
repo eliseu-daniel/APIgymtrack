@@ -91,7 +91,7 @@ class AnthropometryController extends Controller
             return response()->json(['status' => false, 'message' => 'Anthropometry not found'], 404);
         }
 
-        $validator = $request->validate();
+        $validator = $request->validated();
 
         $anthopometry = Anthropometry::where('id', $id)->update($validator);
         return response()->json(['status' => true, 'message' => 'Antropometria atualizada com sucesso', 'data' => $anthopometry], 200);

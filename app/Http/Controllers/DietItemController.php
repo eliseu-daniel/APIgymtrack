@@ -94,23 +94,42 @@ class DietItemController extends Controller
      */
     public function update(CreateDietItemRequest $request, string $id)
     {
-        $Item = DietItem::find($id);
-        if (!$Item) {
-            return response()->json(['status' => false, 'message' => 'Item de dieta não encontrado.'], 404);
-        }
-        $validator = $request->validated();
+        $item = DietItem::find($id);
 
-        $dietItem = DietItem::where('id', $id)->update($validator);
-
-        // se confirmou envio, dispara job
-        if (array_key_exists('send_notification', $dietItem) && $dietItem['send_notification']) {
-            NotifyPatientDietItemConfirmedJob::dispatch(
-                (int) $id,
-                (int) $dietItem->patient_id
-            );
+        if (!$item) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Item de dieta não encontrado.'
+            ], 404);
         }
 
-        return response()->json(['status' => true, 'message' => 'Item de dieta atualizado com sucesso.', 'data' => $dietItem], 200);
+        $validated = $request->validated();
+
+        $item->update($validated);
+
+        if (
+            array_key_exists('send_notification', $validated) &&
+            $validated['send_notification']
+        ) {
+            $itemWithDiet = DietItem::query()
+                ->select('diet_items.id', 'diets.patient_id')
+                ->join('diets', 'diets.id', '=', 'diet_items.diet_id')
+                ->where('diet_items.id', $item->id)
+                ->first();
+
+            if ($itemWithDiet) {
+                NotifyPatientDietItemConfirmedJob::dispatch(
+                    (int) $item->id,
+                    (int) $itemWithDiet->patient_id
+                );
+            }
+        }
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Item de dieta atualizado com sucesso.',
+            'data' => $item->fresh()
+        ], 200);
     }
 
     /**
@@ -122,7 +141,7 @@ class DietItemController extends Controller
         if (!$Item) {
             return response()->json(['status' => false, 'message' => 'Item de dieta não encontrado.'], 404);
         }
-        $DietItem = DietItem::where('id', $id)->update('is_active', false);
+        $Item->update(['is_active' => false]);
         return response()->json(['status' => true, 'message' => 'Item de dieta desativado com sucesso.'], 200);
     }
 

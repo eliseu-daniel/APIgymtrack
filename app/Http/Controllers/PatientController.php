@@ -76,20 +76,29 @@ class PatientController extends Controller
         $patient = Patient::find($id);
 
         if (!$patient) {
-            return response()->json(['status' => false, 'message' => 'Paciente não encontrado.'], 404);
+            return response()->json([
+                'status' => false,
+                'message' => 'Paciente não encontrado.'
+            ], 404);
         }
+
         $patientValidated = $request->validated();
 
-        if ($patientValidated['birth_date']) {
+        if (!empty($patientValidated['birth_date'])) {
             $birthDate = $this->convertDateFormat($patientValidated['birth_date']);
+
             if ($birthDate) {
                 $patientValidated['birth_date'] = $birthDate;
             }
         }
 
-        $patient = Patient::where('id', $id)->update($patientValidated);
+        $patient->update($patientValidated);
 
-        return response()->json(['status' => true, 'message' => 'Paciente atualizado com sucesso.', 'data' => $patient], 200);
+        return response()->json([
+            'status' => true,
+            'message' => 'Paciente atualizado com sucesso.',
+            'data' => $patient->fresh()
+        ], 200);
     }
 
     /**

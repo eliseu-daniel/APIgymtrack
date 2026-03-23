@@ -87,7 +87,7 @@ class DietController extends Controller
      */
     public function update(CreateDietRequest $request, string $id)
     {
-        $validated = $request->validate();
+        $validated = $request->validated();
         $diet = Diet::where('id', $id)->update($validated);
         return response()->json(['status' => true, 'message' => 'Dieta atualizada com sucesso', 'data' => $diet], 200);
     }
