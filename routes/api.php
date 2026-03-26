@@ -14,6 +14,7 @@ use App\Http\Controllers\{
     FoodController,
     MealController,
     MuscleGroupController,
+    NotificationController,
     PatientController,
     PatientRegistrationController,
     PatientWeightController,
@@ -35,13 +36,15 @@ Route::post('/loginAdministrator', [AuthenticateController::class, 'loginAdminis
 Route::middleware('auth:sanctum')->prefix('educators')->group(function () {
     Route::post('logout', [AuthenticateController::class, 'logout']);
 
-    //Notificações
     Route::apiResource('diet-feedback-notifications', DietFeedbackNotificationController::class);
     Route::apiResource('diet-notifications', DietNotificationController::class);
     Route::apiResource('workout-feedback-notifications', WorkoutFeedbackNotificationController::class);
     Route::apiResource('workout-notifications', WorkoutNotificationController::class);
+
     Route::get('notifications/workout-feedback', [WorkoutFeedbackController::class, 'newForEducator']);
     Route::get('notifications/diet-feedback', [DietFeedbackNotificationController::class, 'dietFeedback']);
+    Route::post('notifications/{id?}/read', [NotificationController::class, 'markAsRead']);
+    Route::post('notifications/read', [NotificationController::class, 'markAsRead']);
 
     Route::apiResource('diets', DietController::class);
     Route::apiResource('anthropometrys', AnthropometryController::class);
@@ -80,8 +83,13 @@ Route::middleware('auth:patient')->prefix('patients')->group(function () {
     Route::get('/diet-items', [DietItemController::class, 'getForPacientDietItem']);
     Route::get('/workouts', [WorkoutController::class, 'getForPacientWorkout']);
     Route::get('/workout-items', [WorkoutItemController::class, 'getForPacientWorkoutItem']);
+
     Route::get('notifications/diet-items', [DietItemController::class, 'notifiedForPatient']);
     Route::get('notifications/workout-items', [WorkoutItemController::class, 'notifiedForPatient']);
+    
+    Route::post('notifications/{id?}/read', [NotificationController::class, 'markAsReadPatient']);
+    Route::post('notifications/read', [NotificationController::class, 'markAsReadPatient']);
+
     Route::post('diet-feedbacks', [DietFeedbackController::class, 'store']);
     Route::post('workout-feedbacks', [WorkoutFeedbackController::class, 'store']);
 

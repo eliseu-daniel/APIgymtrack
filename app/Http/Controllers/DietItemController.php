@@ -56,7 +56,7 @@ class DietItemController extends Controller
         $dietItem = DietItem::create($validator);
 
         $itemWithDiet = DietItem::query()
-            ->select('diet_items.id', 'diets.patient_id')
+            ->select('diet_items.id', 'diets.patient_id', 'patient_registrations.educator_id')
             ->join('diets', 'diets.id', '=', 'diet_items.diet_id')
             ->join('patients', 'patients.id', '=', 'diets.patient_id')
             ->join('patient_registrations', 'patient_registrations.patient_id', '=', 'patients.id')
@@ -135,7 +135,7 @@ class DietItemController extends Controller
         $item->update($validated);
 
         $itemWithDiet = DietItem::query()
-            ->select('diet_items.id', 'diets.patient_id')
+            ->select('diet_items.id', 'diets.patient_id', 'patient_registrations.educator_id')
             ->join('diets', 'diets.id', '=', 'diet_items.diet_id')
             ->join('patients', 'patients.id', '=', 'diets.patient_id')
             ->join('patient_registrations', 'patient_registrations.patient_id', '=', 'patients.id')
@@ -175,32 +175,11 @@ class DietItemController extends Controller
     {
         $patientId = $request->user()->id;
 
-        $data = DietItem::query()
-            ->select([
-                'diet_items.id as diet_item_id',
-                'diet_items.meal_time',
-                'diet_items.send_notification',
-                'diet_items.created_at',
-                'diets.id as diet_id',
-            ])
-            ->join('diets', 'diets.id', '=', 'diet_items.diet_id')
-            ->where('diets.patient_id', $patientId)
-            ->where('diet_items.send_notification', 1)
-            ->orderByDesc('diet_items.created_at')
-            ->get()
-            ->map(function ($item) {
-                return [
-                    'id' => 'diet-item-' . $item->diet_item_id,
-                    'type' => 'diet-item',
-                    'title' => 'Nova atualização na dieta',
-                    'message' => 'Seu plano alimentar foi atualizado.',
-                    'created_at' => $item->created_at,
-                    'read' => false,
-                    'diet_id' => $item->diet_id,
-                    'diet_item_id' => $item->diet_item_id,
-                ];
-            })
-            ->values();
+        $data = \App\Models\Notification::query()
+            ->where('patient_id', $patientId)
+            ->where('type', 'diet')
+            ->orderByDesc('created_at')
+            ->get();
 
         return response()->json($data, 200);
     }

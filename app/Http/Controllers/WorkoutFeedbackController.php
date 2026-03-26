@@ -150,25 +150,16 @@ class WorkoutFeedbackController extends Controller
 
     public function newForEducator(Request $request)
     {
-        $idEducator = request()->user()->id;
+        $idEducator = $request->user()->id;
         $after = $request->query('after');
 
-        $query = WorkoutFeedback::query()
-            ->select([
-                'workout_feedback.*',
-                'patients.name as patient_name',
-                'workouts.id as workout_id',
-                'workout_items.id as workout_item_id',
-            ])
-            ->join('workout_items', 'workout_items.id', '=', 'workout_feedback.workout_item_id')
-            ->join('workouts', 'workouts.id', '=', 'workout_items.workout_id')
-            ->join('patients', 'patients.id', '=', 'workouts.patient_id')
-            ->join('patient_registrations', 'patient_registrations.patient_id', '=', 'patients.id')
-            ->where('patient_registrations.educator_id', $idEducator)
-            ->orderBy('workout_feedback.created_at', 'desc');
+        $query = \App\Models\Notification::query()
+            ->where('educator_id', $idEducator)
+            ->where('type', 'workout_feedback')
+            ->orderBy('created_at', 'desc');
 
         if ($after) {
-            $query->where('workout_feedback.created_at', '>', $after);
+            $query->where('created_at', '>', $after);
         }
 
         $data = $query->get();

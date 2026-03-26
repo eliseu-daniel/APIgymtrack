@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\CreateWorkoutItemRequest;
 use App\Jobs\NotifyPatientWorkoutItemConfirmedJob;
 use App\Models\WorkoutItem;
-use Symfony\Component\HttpFoundation\Request;
+use Illuminate\Http\Request;
 
 class WorkoutItemController extends Controller
 {
@@ -59,7 +59,7 @@ class WorkoutItemController extends Controller
                 ->join('workouts', 'workouts.id', '=', 'workout_items.workout_id')
                 ->join('patients', 'patients.id', '=', 'workouts.patient_id')
                 ->join('patient_registrations', 'patient_registrations.patient_id', '=', 'patients.id')
-                ->where('workout_items.id', $itemWorkout->workout_items_id)
+                ->where('workout_items.id', $itemWorkout->id)
                 ->where('patient_registrations.educator_id', $idEducator)
                 ->first();
 
@@ -118,11 +118,28 @@ class WorkoutItemController extends Controller
         $newItemData = $request->validated();
         $newData = WorkoutItem::create($newItemData);
 
-        if (isset($itemWorkout->send_notification) && $itemWorkout->send_notification) {
-            NotifyPatientWorkoutItemConfirmedJob::dispatch(
-                (int) $newData->id,
-                (int) $newData->patient_id
-            );
+        if (isset($newData->send_notification) && $newData->send_notification) {
+            $data = WorkoutItem::query()
+                ->select([
+                    'workout_items.id as workoutItem_id',
+                    'patients.id as patient_id',
+                    'patients.name as patient_name',
+                    'patient_registrations.educator_id as educator_id'
+                ])
+                ->join('workouts', 'workouts.id', '=', 'workout_items.workout_id')
+                ->join('patients', 'patients.id', '=', 'workouts.patient_id')
+                ->join('patient_registrations', 'patient_registrations.patient_id', '=', 'patients.id')
+                ->where('workout_items.id', $newData->id)
+                ->where('patient_registrations.educator_id', request()->user()->id)
+                ->first();
+
+            if ($data) {
+                NotifyPatientWorkoutItemConfirmedJob::dispatch(
+                    (int) $newData->id,
+                    (int) $data->patient_id,
+                    (int) $data->educator_id
+                );
+            }
         }
 
         return response()->json(['status' => true, 'message' => 'Item de treino atualizado com sucesso!', 'ItemWorkoutData' => $newData], 200);
@@ -146,31 +163,11 @@ class WorkoutItemController extends Controller
     {
         $patientId = $request->user()->id;
 
-        $data = WorkoutItem::query()
-            ->select([
-                'workout_items.id as workout_item_id',
-                'workout_items.send_notification',
-                'workout_items.created_at',
-                'workouts.id as workout_id',
-            ])
-            ->join('workouts', 'workouts.id', '=', 'workout_items.workout_id')
-            ->where('workouts.patient_id', $patientId)
-            ->where('workout_items.send_notification', 1)
-            ->orderByDesc('workout_items.created_at')
-            ->get()
-            ->map(function ($item) {
-                return [
-                    'id' => 'workout-item-' . $item->workout_item_id,
-                    'type' => 'workout-item',
-                    'title' => 'Nova atualização no treino',
-                    'message' => 'Seu treino foi atualizado.',
-                    'created_at' => $item->created_at,
-                    'read' => false,
-                    'workout_id' => $item->workout_id,
-                    'workout_item_id' => $item->workout_item_id,
-                ];
-            })
-            ->values();
+        $data = \App\Models\Notification::query()
+            ->where('patient_id', $patientId)
+            ->where('type', 'workout')
+            ->orderByDesc('created_at')
+            ->get();
 
         return response()->json($data, 200);
     }
