@@ -18,7 +18,8 @@ class NotifyEducatorNewDietFeedbackJob implements ShouldQueue
     public function __construct(
         public int $patientId,
         public string $patientName,
-        public string $comment
+        public string $comment,
+        public int $educatorId
 
     ) {}
 
@@ -36,6 +37,7 @@ class NotifyEducatorNewDietFeedbackJob implements ShouldQueue
                 'message' => $this->patientName . ' enviou um feedback de dieta',
                 'comment' => $this->comment,
                 'patient_id' => $this->patientId,
+                'educator_id' => $this->educatorId,
                 'read' => false,
             ]);
         } catch (\Throwable $e) {

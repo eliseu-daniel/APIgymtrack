@@ -21,8 +21,9 @@ class CreateNotificationsTable extends Migration
             $table->text('comment')->nullable();
 
             $table->foreignId('patient_id')->constrained('patients')->onDelete('cascade');
-            $table->timestamp('created_at')->useCurrent();
             $table->boolean('read')->default(false);
+            $table->foreignId('educator_id')->constrained('educators')->onDelete('cascade');
+            $table->timestamp('created_at')->useCurrent();
         });
     }
 

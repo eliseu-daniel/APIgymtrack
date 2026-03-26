@@ -35,15 +35,19 @@ Route::post('/loginAdministrator', [AuthenticateController::class, 'loginAdminis
 Route::middleware('auth:sanctum')->prefix('educators')->group(function () {
     Route::post('logout', [AuthenticateController::class, 'logout']);
 
+    //Notificações
+    Route::apiResource('diet-feedback-notifications', DietFeedbackNotificationController::class);
+    Route::apiResource('diet-notifications', DietNotificationController::class);
+    Route::apiResource('workout-feedback-notifications', WorkoutFeedbackNotificationController::class);
+    Route::apiResource('workout-notifications', WorkoutNotificationController::class);
+    Route::get('notifications/workout-feedback', [WorkoutFeedbackController::class, 'newForEducator']);
+    Route::get('notifications/diet-feedback', [DietFeedbackNotificationController::class, 'dietFeedback']);
+
     Route::apiResource('diets', DietController::class);
     Route::apiResource('anthropometrys', AnthropometryController::class);
     Route::apiResource('diet-feedbacks', DietFeedbackController::class);
-    Route::apiResource('diet-feedback-notifications', DietFeedbackNotificationController::class);
     Route::apiResource('diet-items', DietItemController::class);
-    Route::apiResource('diet-notifications', DietNotificationController::class);
     Route::apiResource('educators', EducatorController::class);
-    Route::get('notifications/diet-feedback', [DietFeedbackNotificationController::class, 'dietFeedback']);
-    Route::get('notifications/workout-feedback', [WorkoutFeedbackController::class, 'newForEducator']);
     Route::apiResource('patients', PatientController::class);
     Route::get('patient/for-educator', [PatientController::class, 'PatientsForEducator']);
     Route::apiResource('patient-registrations', PatientRegistrationController::class);
@@ -55,9 +59,7 @@ Route::middleware('auth:sanctum')->prefix('educators')->group(function () {
 
     Route::apiResource('workouts', WorkoutController::class);
     Route::apiResource('workout-feedbacks', WorkoutFeedbackController::class);
-    Route::apiResource('workout-feedback-notifications', WorkoutFeedbackNotificationController::class);
     Route::apiResource('workout-items', WorkoutItemController::class);
-    Route::apiResource('workout-notifications', WorkoutNotificationController::class);
 
     Route::get('exercises', [ExerciseController::class, 'index']);
     Route::get('exercises/{id}', [ExerciseController::class, 'show']);

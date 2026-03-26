@@ -50,6 +50,7 @@ class DietFeedbackController extends Controller
     public function store(CreateDietFeedbackRequest $request)
     {
         $validator = $request->validated();
+        $idEducator = request()->user()->id;
 
         $feedback = DietFeedback::create([
             'diet_id' => $validator['diet_id'],
@@ -66,14 +67,17 @@ class DietFeedbackController extends Controller
                 ])
                 ->join('diets', 'diets.id', '=', 'diet_feedback.diet_id')
                 ->join('patients', 'patients.id', '=', 'diets.patient_id')
+                ->join('patient_registrations', 'patient_registrations.patient_id', '=', 'patients.id')
                 ->where('diets.id', $feedback->diet_id)
+                ->where('patient_registrations.educator_id', $idEducator)
                 ->first();
 
             if ($data) {
                 NotifyEducatorNewDietFeedbackJob::dispatch(
                     (int) $data->patient_id,
                     (string) $data->patient_name,
-                    (string) $feedback->comment
+                    (string) $feedback->comment,
+                    (int) $data->educator_id
                 );
             }
         }

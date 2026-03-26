@@ -17,6 +17,7 @@ class NotifyPatientWorkoutItemConfirmedJob implements ShouldQueue
     public function __construct(
         public int $workoutItemId,
         public int $patientId,
+        public int $educatorId
     ) {}
 
     public function handle(): void
@@ -33,6 +34,7 @@ class NotifyPatientWorkoutItemConfirmedJob implements ShouldQueue
                 'message' => 'Um item do seu treino foi liberado.',
                 'comment' => null,
                 'patient_id' => $this->patientId,
+                'educator_id' => $this->educatorId,
                 'read' => false,
             ]);
         } catch (\Throwable $e) {

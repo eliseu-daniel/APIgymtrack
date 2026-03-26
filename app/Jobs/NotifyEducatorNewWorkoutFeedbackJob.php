@@ -15,38 +15,29 @@ class NotifyEducatorNewWorkoutFeedbackJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    public function __construct(public int $workoutFeedbackId) {}
+    public function __construct(
+        public int $patientId,
+        public string $patientName,
+        public string $comment,
+        public int $educatorId
+    ) {
+    }
 
     public function handle(): void
     {
-        $feedback = WorkoutFeedback::with(['workoutItem.workout.patient.registrations'])->find($this->workoutFeedbackId);
-
-        if (!$feedback) {
-            return;
-        }
-
-        $educatorIds = $feedback->workoutItem?->workout?->patient?->registrations
-            ?->pluck('educator_id')
-            ->filter()
-            ->unique()
-            ->values()
-            ->toArray() ?? [];
-
         Log::info('Novo workout feedback criado', [
-            'workout_feedback_id' => $feedback->id,
-            'workout_item_id' => $feedback->workout_item_id,
-            'patient_id' => $feedback->workoutItem?->workout?->patient?->id,
-            'educator_ids' => $educatorIds,
-            'created_at' => $feedback->created_at,
+            'patient_id' => $this->patientId,
+            'comment' => $this->comment,
         ]);
 
         try {
             Notification::create([
                 'type' => 'feedback',
-                'title' => 'Novo feedback de treino',
-                'message' => null,
-                'comment' => $feedback->comment,
-                'patient_id' => $feedback->workoutItem?->workout?->patient?->id,
+                'title' => 'Um novo feedback de dieta',
+                'message' => $this->patientName . ' enviou um feedback de dieta',
+                'comment' => $this->comment,
+                'patient_id' => $this->patientId,
+                'educator_id' => $this->educatorId,
                 'read' => false,
             ]);
         } catch (\Throwable $e) {

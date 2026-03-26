@@ -54,6 +54,7 @@ class WorkoutFeedbackController extends Controller
     public function store(CreateWorkoutFeedbackRequest $request): JsonResponse
     {
         $workoutFeedbackValidated = $request->validated();
+        $idEducator = request()->user()->id;
 
         $workoutFeedback = WorkoutFeedback::create([
             'workout_item_id' => $workoutFeedbackValidated['workout_item_id'],
@@ -61,7 +62,32 @@ class WorkoutFeedbackController extends Controller
             'send_notification' => $workoutFeedbackValidated['send_notification'] ?? 1,
         ]);
 
-        NotifyEducatorNewWorkoutFeedbackJob::dispatch((int) $workoutFeedback->id);
+
+
+        if ($workoutFeedback && $workoutFeedback->send_notification) {
+            $data = WorkoutFeedback::query()
+                ->select([
+                    'workouts.id as workout_id',
+                    'patients.id as patient_id',
+                    'patients.name as patient_name',
+                ])
+                ->join('workouts', 'workouts.id', '=', 'workout_feedback.diet_id')
+                ->join('patients', 'patients.id', '=', 'workouts.patient_id')
+                ->join('patient_registrations', 'patient_registrations.patient_id', '=', 'patients.id')
+                ->where('workouts.id', $workoutFeedback->diet_id)
+                ->where('patient_registrations.educator_id', $idEducator)
+                ->first();
+
+            if ($data) {
+                NotifyEducatorNewWorkoutFeedbackJob::dispatch(
+                    (int) $data->patient_id,
+                    (string) $data->patient_name,
+                    (string) $workoutFeedback->comment,
+                    (int) $data->educator_id
+                );
+            }
+        }
+
 
         return response()->json([
             'status' => true,
@@ -125,17 +151,15 @@ class WorkoutFeedbackController extends Controller
     public function newForEducator(Request $request)
     {
         $idEducator = request()->user()->id;
-        $after = $request->query('after'); // YYYY-MM-DD HH:mm:ss
+        $after = $request->query('after');
 
         $query = WorkoutFeedback::query()
             ->select([
-                // ajuste o nome da tabela conforme seu banco:
                 'workout_feedback.*',
                 'patients.name as patient_name',
                 'workouts.id as workout_id',
                 'workout_items.id as workout_item_id',
             ])
-            // ajuste os nomes conforme seu schema real:
             ->join('workout_items', 'workout_items.id', '=', 'workout_feedback.workout_item_id')
             ->join('workouts', 'workouts.id', '=', 'workout_items.workout_id')
             ->join('patients', 'patients.id', '=', 'workouts.patient_id')

@@ -20,5 +20,6 @@ class Notification extends Model
         'comment',
         'patient_id',
         'read',
+        'educator_id',
     ];
 }
