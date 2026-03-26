@@ -49,6 +49,20 @@ class DietItemController extends Controller
     {
         $validator = $request->validated();
         $dietItem = DietItem::create($validator);
+
+        $itemWithDiet = DietItem::query()
+            ->select('diet_items.id', 'diets.patient_id')
+            ->join('diets', 'diets.id', '=', 'diet_items.diet_id')
+            ->where('diet_items.id', $dietItem->id)
+            ->first();
+
+        if ($itemWithDiet) {
+            NotifyPatientDietItemConfirmedJob::dispatch(
+                (int) $dietItem->id,
+                (int) $itemWithDiet->patient_id
+            );
+        }
+
         return response()->json(['status' => true, 'message' => 'Item de dieta criado com sucesso.', 'data' => $dietItem], 201);
     }
 

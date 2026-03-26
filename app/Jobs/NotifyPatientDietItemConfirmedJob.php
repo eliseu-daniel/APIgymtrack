@@ -8,6 +8,7 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
+use App\Models\Notification;
 
 class NotifyPatientDietItemConfirmedJob implements ShouldQueue
 {
@@ -20,10 +21,22 @@ class NotifyPatientDietItemConfirmedJob implements ShouldQueue
 
     public function handle(): void
     {
-        // Sem persistência extra, o "sinal" é o próprio diet_items.send_notification = 1
         Log::info('Diet item liberado para paciente', [
             'diet_item_id' => $this->dietItemId,
             'patient_id' => $this->patientId,
         ]);
+
+        try {
+            Notification::create([
+                'type' => 'diet',
+                'title' => 'Nova atualização na dieta',
+                'message' => 'Um item da sua dieta foi liberado.',
+                'comment' => null,
+                'patient_id' => $this->patientId,
+                'read' => false,
+            ]);
+        } catch (\Throwable $e) {
+            Log::error('Erro ao criar notification para diet item', ['error' => $e->getMessage()]);
+        }
     }
 }

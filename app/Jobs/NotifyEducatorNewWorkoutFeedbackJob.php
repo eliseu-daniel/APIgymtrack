@@ -3,6 +3,7 @@
 namespace App\Jobs;
 
 use App\Models\WorkoutFeedback;
+use App\Models\Notification;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -18,9 +19,7 @@ class NotifyEducatorNewWorkoutFeedbackJob implements ShouldQueue
 
     public function handle(): void
     {
-        $feedback = WorkoutFeedback::query()
-            ->with(['workoutItem.workout.patient.registrations'])
-            ->find($this->workoutFeedbackId);
+        $feedback = WorkoutFeedback::with(['workoutItem.workout.patient.registrations'])->find($this->workoutFeedbackId);
 
         if (!$feedback) {
             return;
@@ -40,5 +39,18 @@ class NotifyEducatorNewWorkoutFeedbackJob implements ShouldQueue
             'educator_ids' => $educatorIds,
             'created_at' => $feedback->created_at,
         ]);
+
+        try {
+            Notification::create([
+                'type' => 'feedback',
+                'title' => 'Novo feedback de treino',
+                'message' => null,
+                'comment' => $feedback->comment,
+                'patient_id' => $feedback->workoutItem?->workout?->patient?->id,
+                'read' => false,
+            ]);
+        } catch (\Throwable $e) {
+            Log::error('Erro ao criar notification para workout feedback', ['error' => $e->getMessage()]);
+        }
     }
 }

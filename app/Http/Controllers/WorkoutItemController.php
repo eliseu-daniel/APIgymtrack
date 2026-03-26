@@ -42,6 +42,14 @@ class WorkoutItemController extends Controller
     {
         $dataItemWorkout = $request->validated();
         $itemWorkout = WorkoutItem::create($dataItemWorkout);
+
+        if (isset($itemWorkout->send_notification) && $itemWorkout->send_notification) {
+            NotifyPatientWorkoutItemConfirmedJob::dispatch(
+                (int) $itemWorkout->id,
+                (int) $itemWorkout->patient_id
+            );
+        }
+
         return response()->json(['status' => true, 'message' => 'Item de treino criado com sucesso!', 'ItemWorkoutData' => $itemWorkout], 201);
     }
 
@@ -88,8 +96,7 @@ class WorkoutItemController extends Controller
         $newItemData = $request->validated();
         $newData = WorkoutItem::create($newItemData);
 
-        // Se o educador confirmou envio (true), dispara job
-        if (array_key_exists('send_notification', $newItemData) && $newItemData['send_notification']) {
+        if (isset($itemWorkout->send_notification) && $itemWorkout->send_notification) {
             NotifyPatientWorkoutItemConfirmedJob::dispatch(
                 (int) $newData->id,
                 (int) $newData->patient_id

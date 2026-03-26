@@ -57,7 +57,27 @@ class DietFeedbackController extends Controller
             'send_notification' => $validator['send_notification'] ?? 1,
         ]);
 
-        NotifyEducatorNewDietFeedbackJob::dispatch((int) $feedback->id);
+        if ($feedback && $feedback->send_notification) {
+            $data = DietFeedback::query()
+                ->select([
+                    'diets.id as diet_id',
+                    'patients.id as patient_id',
+                    'patients.name as patient_name',
+                ])
+                ->join('diets', 'diets.id', '=', 'diet_feedback.diet_id')
+                ->join('patients', 'patients.id', '=', 'diets.patient_id')
+                ->where('diets.id', $feedback->diet_id)
+                ->first();
+
+            if ($data) {
+                NotifyEducatorNewDietFeedbackJob::dispatch(
+                    (int) $data->patient_id,
+                    (string) $data->patient_name,
+                    (string) $feedback->comment
+                );
+            }
+        }
+
 
         return response()->json([
             'status' => true,

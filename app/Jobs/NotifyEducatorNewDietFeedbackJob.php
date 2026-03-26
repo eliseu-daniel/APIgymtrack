@@ -3,6 +3,7 @@
 namespace App\Jobs;
 
 use App\Models\DietFeedback;
+use App\Models\Notification;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -14,39 +15,31 @@ class NotifyEducatorNewDietFeedbackJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    public function __construct(public int $dietFeedbackId) {}
+    public function __construct(
+        public int $patientId,
+        public string $patientName,
+        public string $comment
+
+    ) {}
 
     public function handle(): void
     {
-        $feedback = DietFeedback::query()
-            ->select(
-                'diet_feedback.id',
-                'diet_feedback.diet_id',
-                'diet_feedback.created_at',
-                'diets.patient_id'
-            )
-            ->join('diets', 'diets.id', '=', 'diet_feedback.diet_id')
-            ->where('diet_feedback.id', $this->dietFeedbackId)
-            ->first();
-
-        if (!$feedback) {
-            return;
-        }
-
-        $educatorIds = \App\Models\PatientRegistration::query()
-            ->where('patient_id', $feedback->patient_id)
-            ->pluck('educator_id')
-            ->filter()
-            ->unique()
-            ->values()
-            ->toArray();
-
-        Log::info('Novo diet feedback criado', [
-            'diet_feedback_id' => $feedback->id,
-            'diet_id' => $feedback->diet_id,
-            'patient_id' => $feedback->patient_id,
-            'educator_ids' => $educatorIds,
-            'created_at' => $feedback->created_at,
+        Log::info('Novo feedback da dieta pelo paciente', [
+            'patient_id' => $this->patientId,
+            'comment' => $this->comment,
         ]);
+
+        try {
+            Notification::create([
+                'type' => 'feedback',
+                'title' => 'Um novo feedback de dieta',
+                'message' => $this->patientName . ' enviou um feedback de dieta',
+                'comment' => $this->comment,
+                'patient_id' => $this->patientId,
+                'read' => false,
+            ]);
+        } catch (\Throwable $e) {
+            Log::error('Erro ao criar notification para diet feedback', ['error' => $e->getMessage()]);
+        }
     }
 }
