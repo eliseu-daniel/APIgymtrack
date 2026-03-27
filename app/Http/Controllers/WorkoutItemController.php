@@ -169,8 +169,13 @@ class WorkoutItemController extends Controller
             ->where('patient_id', $patientId)
             ->where('type', 'workout')
             ->orderByDesc('created_at')
+            ->where('read', false)
             ->get();
 
+        if ($data->isEmpty()) {
+            return response()->json(['status' => false, 'message' => 'Nenhuma notificação de treino encontrada.'], 404);
+        }
+        
         return response()->json($data, 200);
     }
 

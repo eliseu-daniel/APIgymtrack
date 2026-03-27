@@ -72,7 +72,12 @@ class DietFeedbackNotificationController extends Controller
             ->where('educator_id', $educatorId)
             ->where('type', 'diet_feedback')
             ->orderByDesc('created_at')
+            ->where('read', false)
             ->get();
+
+        if ($notifications->isEmpty()) {
+            return response()->json(['status' => false, 'message' => 'Nenhuma notificação de feedback de treino encontrada.'], 404);
+        }
 
         return response()->json($notifications, 200);
     }

@@ -156,10 +156,15 @@ class WorkoutFeedbackController extends Controller
         $query = \App\Models\Notification::query()
             ->where('educator_id', $idEducator)
             ->where('type', 'workout_feedback')
+            ->where('read', false)
             ->orderBy('created_at', 'desc');
 
         if ($after) {
             $query->where('created_at', '>', $after);
+        }
+
+        if ($query->isEmpty()) {
+            return response()->json(['status' => false, 'message' => 'Nenhuma notificação de feedback de treino encontrada.'], 404);
         }
 
         $data = $query->get();
@@ -167,7 +172,6 @@ class WorkoutFeedbackController extends Controller
         return response()->json([
             'status' => true,
             'data' => $data,
-            'server_time' => now()->toDateTimeString(),
         ], 200);
     }
 }
