@@ -76,7 +76,7 @@ class DietFeedbackNotificationController extends Controller
             ->get();
 
         if ($notifications->isEmpty()) {
-            return response()->json(['status' => false, 'message' => 'Nenhuma notificação de feedback de treino encontrada.'], 404);
+            return response()->json(['status' => false, 'message' => 'Nenhuma notificação de feedback de dieta encontrada.'], 200);
         }
 
         return response()->json($notifications, 200);

@@ -166,7 +166,7 @@ class WorkoutFeedbackController extends Controller
         $data = $query->get();
 
         if ($data->isEmpty()) {
-            return response()->json(['status' => false, 'message' => 'Nenhuma notificação de feedback de treino encontrada.'], 404);
+            return response()->json(['status' => false, 'message' => 'Nenhuma notificação de feedback de treino encontrada.'], 200);
         }
 
         return response()->json([
