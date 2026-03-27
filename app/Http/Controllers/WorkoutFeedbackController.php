@@ -148,7 +148,7 @@ class WorkoutFeedbackController extends Controller
         //
     }
 
-    public function newForEducator(Request $request)
+    public function newForEducator(Request $request): JsonResponse
     {
         $idEducator = $request->user()->id;
         $after = $request->query('after');
@@ -163,11 +163,11 @@ class WorkoutFeedbackController extends Controller
             $query->where('created_at', '>', $after);
         }
 
-        if ($query->isEmpty()) {
+        $data = $query->get();
+
+        if ($data->isEmpty()) {
             return response()->json(['status' => false, 'message' => 'Nenhuma notificação de feedback de treino encontrada.'], 404);
         }
-
-        $data = $query->get();
 
         return response()->json([
             'status' => true,
