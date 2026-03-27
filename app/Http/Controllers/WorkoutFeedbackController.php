@@ -155,7 +155,7 @@ class WorkoutFeedbackController extends Controller
 
         $query = \App\Models\Notification::query()
             ->where('educator_id', $idEducator)
-            ->where('type', 'workout_feedback')
+            ->where('type', 'feedback')
             ->where('read', false)
             ->orderBy('created_at', 'desc');
 

@@ -70,7 +70,7 @@ class DietFeedbackNotificationController extends Controller
 
         $notifications = \App\Models\Notification::query()
             ->where('educator_id', $educatorId)
-            ->where('type', 'diet_feedback')
+            ->where('type', 'feedback')
             ->orderByDesc('created_at')
             ->where('read', false)
             ->get();

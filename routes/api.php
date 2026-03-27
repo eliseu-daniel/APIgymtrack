@@ -42,8 +42,8 @@ Route::middleware('auth:sanctum')->prefix('educators')->group(function () {
     // Route::apiResource('workout-notifications', WorkoutNotificationController::class);
 
     // Esses que estou usando agora para pegar as notificações
-    Route::get('notifications/workout-feedback', [WorkoutFeedbackController::class, 'newForEducator']);
-    Route::get('notifications/diet-feedback', [DietFeedbackNotificationController::class, 'dietFeedback']);
+    Route::get('notifications/', [WorkoutFeedbackController::class, 'newForEducator']);
+    // Route::get('notifications/diet-feedback', [DietFeedbackNotificationController::class, 'dietFeedback']);
     Route::post('notifications/{id?}/read', [NotificationController::class, 'markAsRead']);
     Route::post('notifications/read', [NotificationController::class, 'markAsRead']);
 
