@@ -34,7 +34,7 @@ class NotifyEducatorNewWorkoutFeedbackJob implements ShouldQueue
       Notification::create([
         'type' => 'feedback',
         'title' => 'Um novo feedback de dieta',
-        'message' => $this->patientName . ' enviou um feedback de dieta',
+        'message' => $this->patientName . ' enviou um feedback de treino',
         'comment' => $this->comment,
         'patient_id' => $this->patientId,
         'educator_id' => $this->educatorId,
