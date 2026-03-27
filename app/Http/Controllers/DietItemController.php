@@ -191,7 +191,7 @@ class DietItemController extends Controller
             ->get();
 
         if ($data->isEmpty()) {
-            return response()->json(['status' => false, 'message' => 'Nenhuma notificação de dieta encontrada.'], 404);
+            return response()->json(['status' => false, 'message' => 'Nenhuma notificação de dieta encontrada.'], 200);
         }
 
         return response()->json($data, 200);

@@ -173,7 +173,7 @@ class WorkoutItemController extends Controller
             ->get();
 
         if ($data->isEmpty()) {
-            return response()->json(['status' => false, 'message' => 'Nenhuma notificação de treino encontrada.'], 404);
+            return response()->json(['status' => false, 'message' => 'Nenhuma notificação de treino encontrada.'], 200);
         }
         
         return response()->json($data, 200);
