@@ -65,20 +65,20 @@ class WorkoutFeedbackController extends Controller
 
 
         if ($workoutFeedback && $workoutFeedback->send_notification) {
-            $data = WorkoutFeedback::query()
+            $data = \App\Models\WorkoutItem::query()
                 ->select([
                     'workouts.id as workout_id',
                     'patients.id as patient_id',
                     'patients.name as patient_name',
+                    'patient_registrations.educator_id as educator_id',
                 ])
-                ->join('workouts', 'workouts.id', '=', 'workout_feedback.diet_id')
+                ->join('workouts', 'workouts.id', '=', 'workout_items.workout_id')
                 ->join('patients', 'patients.id', '=', 'workouts.patient_id')
                 ->join('patient_registrations', 'patient_registrations.patient_id', '=', 'patients.id')
-                ->where('workouts.id', $workoutFeedback->diet_id)
-                ->where('patient_registrations.educator_id', $idEducator)
+                ->where('workout_items.id', $workoutFeedback->workout_item_id)
                 ->first();
 
-            if ($data) {
+            if ($data && $data->educator_id) {
                 NotifyEducatorNewWorkoutFeedbackJob::dispatch(
                     (int) $data->patient_id,
                     (string) $data->patient_name,
