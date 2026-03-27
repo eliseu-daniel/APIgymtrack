@@ -26,6 +26,7 @@ class WorkoutItemController extends Controller
                 ->join('patients', 'workouts.patient_id', '=', 'patients.id')
                 ->join('patient_registrations', 'patient_registrations.patient_id', '=', 'patients.id')
                 ->where('patient_registrations.educator_id', request()->user()->id)
+                ->where('workout_items.is_active', true)
                 ->get()
         ], 200);
     }
@@ -89,6 +90,7 @@ class WorkoutItemController extends Controller
             ->join('patient_registrations', 'patient_registrations.patient_id', '=', 'patients.id')
             ->where('workout_items.id', $id)
             ->where('patient_registrations.educator_id', request()->user()->id)
+            ->where('workout_items.is_active', true)
             ->first();
         if (!$itemWorkout) {
             return response()->json(['status' => false, 'message' => 'Item de treino não encontrado.'], 404);
