@@ -84,6 +84,7 @@ Route::middleware('auth:patient')->prefix('patients')->group(function () {
     Route::get('/diet-items', [DietItemController::class, 'getForPacientDietItem']);
     Route::get('/workouts', [WorkoutController::class, 'getForPacientWorkout']);
     Route::get('/workout-items', [WorkoutItemController::class, 'getForPacientWorkoutItem']);
+    Route::get('exercises/{id}', [ExerciseController::class, 'show']);
 
     // essa rota para o mobile
     //ver depois o que fazer para integrar as duas
