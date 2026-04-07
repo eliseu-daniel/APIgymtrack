@@ -16,19 +16,20 @@ class DietFeedbackController extends Controller
     {
         $idEducator = request()->user()->id;
 
-        $data = DietFeedback::query()
-            ->select([
-                'diet_feedback.*',
-                'diet_feedback.id as diet_feedback_id',
-                'patients.name as patient_name',
-                'diets.id as diet_id',
-            ])
-            ->join('diets', 'diets.id', '=', 'diet_feedback.diet_id')
-            ->join('patients', 'patients.id', '=', 'diets.patient_id')
-            ->join('patient_registrations', 'patient_registrations.patient_id', '=', 'patients.id')
-            ->where('patient_registrations.educator_id', $idEducator)
-            ->orderBy('diet_feedback.created_at', 'desc')
-            ->get();
+        $data = DietFeedback::with('diet.patient')
+            ->whereHas('diet.patient.registrations', function ($query) use ($idEducator) {
+                $query->where('educator_id', $idEducator);
+            })
+            ->orderBy('created_at', 'desc')
+            ->get()
+            ->map(function ($feedback) {
+                $feedbackArray = $feedback->toArray();
+                $feedbackArray['diet_feedback_id'] = $feedback->id;
+                $feedbackArray['patient_name'] = $feedback->diet->patient['name'] ?? null;
+                $feedbackArray['diet_id'] = $feedback->diet_id;
+                unset($feedbackArray['diet']);
+                return $feedbackArray;
+            });
 
         return response()->json([
             'status' => true,
@@ -59,25 +60,19 @@ class DietFeedbackController extends Controller
         ]);
 
         if ($feedback->send_notification == true) {
-            $data = \App\Models\Diet::query()
-                ->select([
-                    'diets.id as diet_id',
-                    'patients.id as patient_id',
-                    'patients.name as patient_name',
-                    'patient_registrations.educator_id as educator_id',
-                ])
-                ->join('patients', 'patients.id', '=', 'diets.patient_id')
-                ->join('patient_registrations', 'patient_registrations.patient_id', '=', 'patients.id')
-                ->where('diets.id', $feedback->diet_id)
-                ->first();
+            $dietWithPatient = \App\Models\Diet::with('patient.registrations')->find($feedback->diet_id);
 
-            if ($data && $data->educator_id) {
-                NotifyEducatorNewDietFeedbackJob::dispatch(
-                    (int) $data->patient_id,
-                    (string) $data->patient_name,
-                    (string) $feedback->comment,
-                    (int) $data->educator_id
-                );
+            if ($dietWithPatient && $dietWithPatient->patient) {
+                $registration = $dietWithPatient->patient->registrations->first();
+                
+                if ($registration && $registration->educator_id) {
+                    NotifyEducatorNewDietFeedbackJob::dispatch(
+                        (int) $dietWithPatient->patient_id,
+                        (string) $dietWithPatient->patient->name,
+                        (string) $feedback->comment,
+                        (int) $registration->educator_id
+                    );
+                }
             }
         }
 
@@ -95,24 +90,25 @@ class DietFeedbackController extends Controller
     public function show(string $id)
     {
         $idEducator = request()->user()->id;
-        $data = DietFeedback::query()
-            ->select([
-                'diet_feedback.*',
-                'patients.name as patient_name',
-            ])
-            ->join('diets', 'diets.id', '=', 'diet_feedback.diet_id')
-            ->join('patients', 'patients.id', '=', 'diets.patient_id')
-            ->join('patient_registrations', 'patient_registrations.patient_id', '=', 'patients.id')
-            ->where('patient_registrations.educator_id', $idEducator)
-            ->where('diet_feedback.id', $id)
+        $feedback = DietFeedback::with('diet.patient')
+            ->whereHas('diet.patient.registrations', function ($query) use ($idEducator) {
+                $query->where('educator_id', $idEducator);
+            })
+            ->where('id', $id)
             ->first();
+
         if (!$idEducator) {
             return response()->json(['status' => false, 'message' => 'Antropometria não encontrada'], 404);
         }
-        if (!$data) {
+        if (!$feedback) {
             return response()->json(['status' => false, 'message' => 'Feedback de dieta não encontrado'], 404);
         }
-        return response()->json(['status' => true, 'data' => $data]);
+
+        $feedbackArray = $feedback->toArray();
+        $feedbackArray['patient_name'] = $feedback->diet->patient['name'] ?? null;
+        unset($feedbackArray['diet']);
+
+        return response()->json(['status' => true, 'data' => $feedbackArray]);
     }
 
     /**

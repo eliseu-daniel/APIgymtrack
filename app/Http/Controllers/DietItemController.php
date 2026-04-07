@@ -15,26 +15,28 @@ class DietItemController extends Controller
     public function index()
     {
         $idEducator = request()->user()->id;
+        $items = DietItem::with(['diet.patient', 'food', 'meal'])
+            ->whereHas('diet.patient.registrations', function ($query) use ($idEducator) {
+                $query->where('educator_id', $idEducator);
+            })
+            ->where('is_active', true)
+            ->get()
+            ->map(function ($item) {
+                $itemArray = $item->toArray();
+                $itemArray['diet_item_id'] = $item->id;
+                $itemArray['diet_id'] = $item->diet_id;
+                $itemArray['food_id'] = $item->food_id;
+                $itemArray['name'] = $item->diet->patient['name'] ?? null;
+                $itemArray['food_name'] = $item->food['name'] ?? null;
+                $itemArray['meal_id'] = $item->meals_id;
+                $itemArray['meal_name'] = $item->meal['name'] ?? null;
+                unset($itemArray['diet'], $itemArray['food'], $itemArray['meal']);
+                return $itemArray;
+            });
+
         return response()->json([
             'status' => true,
-            'message' => DietItem::select(
-                'diet_items.id as diet_item_id',
-                'diets.id as diet_id',
-                'food.id as food_id',
-                'patients.name',
-                'food.name as food_name',
-                'diet_items.*',
-                'meals.id as meal_id',
-                'meals.name as meal_name',
-            )
-                ->join('diets', 'diets.id', '=', 'diet_items.diet_id')
-                ->join('patients', 'patients.id', '=', 'diets.patient_id')
-                ->join('patient_registrations', 'patient_registrations.patient_id', '=', 'patients.id')
-                ->join('food', 'food.id', '=', 'diet_items.food_id')
-                ->join('meals', 'meals.id', '=', 'diet_items.meals_id')
-                ->where('patient_registrations.educator_id', $idEducator)
-                ->where('diet_items.is_active', true)
-                ->get()
+            'message' => $items
         ], 200);
     }
 
@@ -56,22 +58,18 @@ class DietItemController extends Controller
         $validator = $request->validated();
         $dietItem = DietItem::create($validator);
 
-        if ($dietItem->send_notification = true) {
-            $itemWithDiet = DietItem::query()
-                ->select('diet_items.id', 'diets.patient_id', 'patient_registrations.educator_id')
-                ->join('diets', 'diets.id', '=', 'diet_items.diet_id')
-                ->join('patients', 'patients.id', '=', 'diets.patient_id')
-                ->join('patient_registrations', 'patient_registrations.patient_id', '=', 'patients.id')
-                ->where('patient_registrations.educator_id', $idEducator)
-                ->where('diet_items.id', $dietItem->id)
-                ->first();
+        if ($dietItem->send_notification == true) {
+            $itemWithDiet = DietItem::with('diet.patient.registrations')->find($dietItem->id);
 
-            if ($itemWithDiet) {
-                NotifyPatientDietItemConfirmedJob::dispatch(
-                    (int) $dietItem->id,
-                    (int) $itemWithDiet->patient_id,
-                    (int) $itemWithDiet->educator_id
-                );
+            if ($itemWithDiet && $itemWithDiet->diet && $itemWithDiet->diet->patient) {
+                $registration = $itemWithDiet->diet->patient->registrations->where('educator_id', $idEducator)->first();
+                if ($registration) {
+                    NotifyPatientDietItemConfirmedJob::dispatch(
+                        (int) $dietItem->id,
+                        (int) $itemWithDiet->diet->patient_id,
+                        (int) $registration->educator_id
+                    );
+                }
             }
         }
 
@@ -84,31 +82,29 @@ class DietItemController extends Controller
     public function show(string $id)
     {
         $idEducator = request()->user()->id;
-        $dietItem = DietItem::select(
-            'diet_items.id as diet_item_id',
-            'diets.id as diet_id',
-            'food.id as food_id',
-            'patients.name',
-            'food.name as food_name',
-            'meals.id as meal_id',
-            'meals.name as meal_name',
-            'diet_items.*',
-        )
-            ->join('diets', 'diets.id', '=', 'diet_items.diet_id')
-            ->join('patients', 'patients.id', '=', 'diets.patient_id')
-            ->join('patient_registrations', 'patient_registrations.patient_id', '=', 'patients.id')
-            ->join('food', 'food.id', '=', 'diet_items.food_id')
-            ->join('meals', 'meals.id', '=', 'diet_items.meals_id')
-            ->where('patient_registrations.educator_id', $idEducator)
-            ->where('diet_items.id', $id)
-            ->where('diet_items.is_active', true)
+        $dietItem = DietItem::with(['diet.patient', 'food', 'meal'])
+            ->whereHas('diet.patient.registrations', function ($query) use ($idEducator) {
+                $query->where('educator_id', $idEducator);
+            })
+            ->where('id', $id)
+            ->where('is_active', true)
             ->first();
 
         if (!$dietItem) {
             return response()->json(['status' => false, 'message' => 'Item de dieta não encontrado.'], 404);
         }
 
-        return response()->json(['status' => true, 'message' => $dietItem]);
+        $itemArray = $dietItem->toArray();
+        $itemArray['diet_item_id'] = $dietItem->id;
+        $itemArray['diet_id'] = $dietItem->diet_id;
+        $itemArray['food_id'] = $dietItem->food_id;
+        $itemArray['name'] = $dietItem->diet->patient['name'] ?? null;
+        $itemArray['food_name'] = $dietItem->food['name'] ?? null;
+        $itemArray['meal_id'] = $dietItem->meals_id;
+        $itemArray['meal_name'] = $dietItem->meal['name'] ?? null;
+        unset($itemArray['diet'], $itemArray['food'], $itemArray['meal']);
+
+        return response()->json(['status' => true, 'message' => $itemArray]);
     }
 
     /**
@@ -140,29 +136,25 @@ class DietItemController extends Controller
 
         $newItem = DietItem::create($validated);
 
-        if ($newItem->send_notification = true) {
-            $itemWithDiet = DietItem::query()
-                ->select('diet_items.id', 'diets.patient_id', 'patient_registrations.educator_id')
-                ->join('diets', 'diets.id', '=', 'diet_items.diet_id')
-                ->join('patients', 'patients.id', '=', 'diets.patient_id')
-                ->join('patient_registrations', 'patient_registrations.patient_id', '=', 'patients.id')
-                ->where('patient_registrations.educator_id', $idEducator)
-                ->where('diet_items.id', $newItem->id)
-                ->first();
+        if ($newItem->send_notification == true) {
+            $itemWithDiet = DietItem::with('diet.patient.registrations')->find($newItem->id);
 
-            if ($itemWithDiet) {
-                NotifyPatientDietItemConfirmedJob::dispatch(
-                    (int) $newItem->id,
-                    (int) $itemWithDiet->patient_id,
-                    (int) $itemWithDiet->educator_id
-                );
+            if ($itemWithDiet && $itemWithDiet->diet && $itemWithDiet->diet->patient) {
+                $registration = $itemWithDiet->diet->patient->registrations->where('educator_id', $idEducator)->first();
+                if ($registration) {
+                    NotifyPatientDietItemConfirmedJob::dispatch(
+                        (int) $newItem->id,
+                        (int) $itemWithDiet->diet->patient_id,
+                        (int) $registration->educator_id
+                    );
+                }
             }
         }
 
         return response()->json([
             'status' => true,
             'message' => 'Item de dieta atualizado com sucesso.',
-            'data' => $item->fresh()
+            'data' => $newItem
         ], 200);
     }
 
@@ -201,28 +193,23 @@ class DietItemController extends Controller
     {
         $idPatient = request()->user()->id;
 
-        $items = DietItem::select(
-            'diet_items.id as diet_item_id',
-            'diet_items.*',
-            'food.name as food_name',
-            'meals.id as meal_id',
-            'meals.name as meal_name'
-        )
-            ->join('food', 'diet_items.food_id', '=', 'food.id')
-            ->join('diets', 'diet_items.diet_id', '=', 'diets.id')
-            ->join('meals', 'diet_items.meals_id', '=', 'meals.id')
-            ->where('diets.patient_id', $idPatient)
-            ->orderBy('meals.id', 'asc')
-            ->orderBy('diet_items.created_at', 'asc')
+        $items = DietItem::with(['food', 'meal'])
+            ->whereHas('diet', function ($query) use ($idPatient) {
+                $query->where('patient_id', $idPatient);
+            })
+            ->orderBy('meals_id', 'asc')
+            ->orderBy('created_at', 'asc')
             ->get();
 
-        $grouped = $items->groupBy('meal_name')->map(function ($group) {
+        $grouped = $items->groupBy(function ($item) {
+            return $item->meal['name'] ?? 'Outros';
+        })->map(function ($group) {
             return $group->map(function ($item) {
-                unset(
-                    $item->meal_id,
-                    $item->meal_name,
-                );
-                return $item;
+                $itemArray = $item->toArray();
+                $itemArray['diet_item_id'] = $item->id;
+                $itemArray['food_name'] = $item->food['name'] ?? null;
+                unset($itemArray['food'], $itemArray['meal'], $itemArray['meal_id'], $itemArray['meal_name']);
+                return $itemArray;
             })->values();
         });
 

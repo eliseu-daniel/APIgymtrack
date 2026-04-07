@@ -14,19 +14,24 @@ class WorkoutController extends Controller
     public function index()
     {
         $idEducator = request()->user()->id;
-        return response()->json(['status' => true, 'WorkoutData' => Workout::select(
-            'workouts.id as workout_id',
-            'workouts.*',
-            'patients.id as patient_id',
-            'patients.name',
-            'workout_types.id as workout_type_id',
-            'workout_types.workout_type as workout_type_name'
-        )
-            ->join('patients', 'workouts.patient_id', '=', 'patients.id')
-            ->join('workout_types', 'workout_types.id', '=', 'workouts.workout_type_id')
-            ->join('patient_registrations', 'patient_registrations.patient_id', '=', 'patients.id')
-            ->where('patient_registrations.educator_id', $idEducator)
-            ->orderBy('workouts.start_date', 'desc')->get()], 200);
+        $workouts = Workout::with(['patient', 'workoutType'])
+            ->whereHas('patient.registrations', function ($query) use ($idEducator) {
+                $query->where('educator_id', $idEducator);
+            })
+            ->orderBy('start_date', 'desc')
+            ->get()
+            ->map(function ($workout) {
+                $workoutArray = $workout->toArray();
+                $workoutArray['workout_id'] = $workout->id;
+                $workoutArray['patient_id'] = $workout->patient_id;
+                $workoutArray['name'] = $workout->patient['name'] ?? null;
+                $workoutArray['workout_type_id'] = $workout->workout_type_id;
+                $workoutArray['workout_type_name'] = $workout->workoutType['workout_type'] ?? null;
+                unset($workoutArray['patient'], $workoutArray['workout_type']);
+                return $workoutArray;
+            });
+
+        return response()->json(['status' => true, 'WorkoutData' => $workouts], 200);
     }
 
     /**
@@ -53,26 +58,26 @@ class WorkoutController extends Controller
     public function show(string $id)
     {
         $idEducator = request()->user()->id;
-        $workout = Workout::select(
-            'workouts.id as workout_id',
-            'workouts.*',
-            'patients.id as patient_id',
-            'patients.name',
-            'workout_types.id as workout_type_id',
-            'workout_types.workout_type as workout_type_name'
-        )
-            ->join('patients', 'workouts.patient_id', '=', 'patients.id')
-            ->join('workout_types', 'workout_types.id', '=', 'workouts.workout_type_id')
-            ->join('patient_registrations', 'patient_registrations.patient_id', '=', 'patients.id')
-            ->where('patient_registrations.educator_id', $idEducator)
-            ->where('workouts.id', $id)
-            
+        $workout = Workout::with(['patient', 'workoutType'])
+            ->whereHas('patient.registrations', function ($query) use ($idEducator) {
+                $query->where('educator_id', $idEducator);
+            })
+            ->where('id', $id)
             ->first();
 
         if (!$workout) {
             return response()->json(['status' => false, 'message' => 'Treino não encontrado'], 404);
         }
-        return response()->json(['status' => true, 'workout' => $workout], 200);
+
+        $workoutArray = $workout->toArray();
+        $workoutArray['workout_id'] = $workout->id;
+        $workoutArray['patient_id'] = $workout->patient_id;
+        $workoutArray['name'] = $workout->patient['name'] ?? null;
+        $workoutArray['workout_type_id'] = $workout->workout_type_id;
+        $workoutArray['workout_type_name'] = $workout->workoutType['workout_type'] ?? null;
+        unset($workoutArray['patient'], $workoutArray['workout_type']);
+
+        return response()->json(['status' => true, 'workout' => $workoutArray], 200);
     }
 
     /**
@@ -93,7 +98,7 @@ class WorkoutController extends Controller
             return response()->json(['status' => false, 'message' => 'Treino não encontrado'], 404);
         }
         $workoutValidated = $request->validated();
-        $workout  = Workout::where('id', $id)->update($workoutValidated);
+        $workout->update($workoutValidated);
         return response()->json(['status' => true, 'message' => 'Treino atualizado com sucesso', 'workout' => $workout], 200);
     }
 
@@ -113,16 +118,20 @@ class WorkoutController extends Controller
     public function getForPacientWorkout()
     {
         $idPatient = request()->user()->id;
-        return response()->json(['status' => true, 'WorkoutData' => Workout::select(
-            'workouts.*',
-            'patients.id as patient_id',
-            'patients.name',
-            'workout_types.id as workout_type_id',
-            'workout_types.workout_type as workout_type_name'
-        )
-            ->join('patients', 'workouts.patient_id', '=', 'patients.id')
-            ->join('workout_types', 'workout_types.id', '=', 'workouts.workout_type_id')
-            ->where('workouts.patient_id', $idPatient)
-            ->orderBy('workouts.start_date', 'desc')->get()], 200);
+        $workouts = Workout::with(['patient', 'workoutType'])
+            ->where('patient_id', $idPatient)
+            ->orderBy('start_date', 'desc')
+            ->get()
+            ->map(function ($workout) {
+                $workoutArray = $workout->toArray();
+                $workoutArray['patient_id'] = $workout->patient_id;
+                $workoutArray['name'] = $workout->patient['name'] ?? null;
+                $workoutArray['workout_type_id'] = $workout->workout_type_id;
+                $workoutArray['workout_type_name'] = $workout->workoutType['workout_type'] ?? null;
+                unset($workoutArray['patient'], $workoutArray['workout_type']);
+                return $workoutArray;
+            });
+
+        return response()->json(['status' => true, 'WorkoutData' => $workouts], 200);
     }
 }

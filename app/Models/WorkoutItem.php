@@ -33,4 +33,9 @@ class WorkoutItem extends Model
     {
         return $this->hasMany(WorkoutFeedback::class, 'workout_item_id');
     }
+
+    public function exercise(): BelongsTo
+    {
+        return $this->belongsTo(Exercise::class, 'exercise_id');
+    }
 }

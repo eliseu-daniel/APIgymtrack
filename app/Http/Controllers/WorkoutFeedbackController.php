@@ -17,22 +17,22 @@ class WorkoutFeedbackController extends Controller
     {
         $idEducator = request()->user()->id;
 
-        $data = WorkoutFeedback::query()
-            ->select([
-                'workout_feedback.id as workout_feedback_id',
-                'workout_feedback.*',
-                'patients.id as patient_id',
-                'patients.name as patient_name',
-                'workouts.id as workout_id',
-                'workout_items.id as workout_item_id',
-            ])
-            ->join('workout_items', 'workout_items.id', '=', 'workout_feedback.workout_item_id')
-            ->join('workouts', 'workouts.id', '=', 'workout_items.workout_id')
-            ->join('patients', 'patients.id', '=', 'workouts.patient_id')
-            ->join('patient_registrations', 'patient_registrations.patient_id', '=', 'patients.id')
-            ->where('patient_registrations.educator_id', $idEducator)
-            ->orderBy('workout_feedback.created_at', 'desc')
-            ->get();
+        $data = WorkoutFeedback::with('workoutItem.workout.patient')
+            ->whereHas('workoutItem.workout.patient.registrations', function ($query) use ($idEducator) {
+                $query->where('educator_id', $idEducator);
+            })
+            ->orderBy('created_at', 'desc')
+            ->get()
+            ->map(function ($feedback) {
+                $feedbackArray = $feedback->toArray();
+                $feedbackArray['workout_feedback_id'] = $feedback->id;
+                $feedbackArray['patient_id'] = $feedback->workoutItem->workout->patient_id ?? null;
+                $feedbackArray['patient_name'] = $feedback->workoutItem->workout->patient['name'] ?? null;
+                $feedbackArray['workout_id'] = $feedback->workoutItem->workout_id ?? null;
+                $feedbackArray['workout_item_id'] = $feedback->workout_item_id;
+                unset($feedbackArray['workout_item']);
+                return $feedbackArray;
+            });
 
         return response()->json([
             'status' => true,
@@ -65,26 +65,19 @@ class WorkoutFeedbackController extends Controller
 
 
         if ($workoutFeedback && $workoutFeedback->send_notification) {
-            $data = \App\Models\WorkoutItem::query()
-                ->select([
-                    'workouts.id as workout_id',
-                    'patients.id as patient_id',
-                    'patients.name as patient_name',
-                    'patient_registrations.educator_id as educator_id',
-                ])
-                ->join('workouts', 'workouts.id', '=', 'workout_items.workout_id')
-                ->join('patients', 'patients.id', '=', 'workouts.patient_id')
-                ->join('patient_registrations', 'patient_registrations.patient_id', '=', 'patients.id')
-                ->where('workout_items.id', $workoutFeedback->workout_item_id)
-                ->first();
+            $itemWithPatient = \App\Models\WorkoutItem::with('workout.patient.registrations')->find($workoutFeedback->workout_item_id);
 
-            if ($data && $data->educator_id) {
-                NotifyEducatorNewWorkoutFeedbackJob::dispatch(
-                    (int) $data->patient_id,
-                    (string) $data->patient_name,
-                    (string) $workoutFeedback->comment,
-                    (int) $data->educator_id
-                );
+            if ($itemWithPatient && $itemWithPatient->workout && $itemWithPatient->workout->patient) {
+                $registration = $itemWithPatient->workout->patient->registrations->first();
+                
+                if ($registration && $registration->educator_id) {
+                    NotifyEducatorNewWorkoutFeedbackJob::dispatch(
+                        (int) $itemWithPatient->workout->patient_id,
+                        (string) $itemWithPatient->workout->patient->name,
+                        (string) $workoutFeedback->comment,
+                        (int) $registration->educator_id
+                    );
+                }
             }
         }
 
@@ -102,26 +95,26 @@ class WorkoutFeedbackController extends Controller
     public function show(string $id)
     {
         $idEducator = request()->user()->id;
-        $workoutFeedback = WorkoutFeedback::select(
-            'workout_feedback.id as workout_feedback_id',
-            'workout_feedback.*',
-            'patients.id as patient_id',
-            'patients.name as patient_name',
-            'workouts.id as workout_id',
-            'workout_items.id as workout_item_id',
-        )
-            ->join('workout_items', 'workout_items.id', '=', 'workout_feedback.workout_item_id')
-            ->join('workouts', 'workouts.id', '=', 'workout_items.workout_id')
-            ->join('patients', 'patients.id', '=', 'workouts.patient_id')
-            ->join('patient_registrations', 'patient_registrations.patient_id', '=', 'patients.id')
-            ->where('patient_registrations.educator_id', $idEducator)
-            ->where('workout_feedback.id', $id)
+        $workoutFeedback = WorkoutFeedback::with('workoutItem.workout.patient')
+            ->whereHas('workoutItem.workout.patient.registrations', function ($query) use ($idEducator) {
+                $query->where('educator_id', $idEducator);
+            })
+            ->where('id', $id)
             ->first();
 
         if (!$workoutFeedback) {
             return response()->json(['status' => false, 'message' => 'Feeback não encontrado'], 404);
         }
-        return response()->json(['status' => true, 'message' => $workoutFeedback], 200);
+        
+        $feedbackArray = $workoutFeedback->toArray();
+        $feedbackArray['workout_feedback_id'] = $workoutFeedback->id;
+        $feedbackArray['patient_id'] = $workoutFeedback->workoutItem->workout->patient_id ?? null;
+        $feedbackArray['patient_name'] = $workoutFeedback->workoutItem->workout->patient['name'] ?? null;
+        $feedbackArray['workout_id'] = $workoutFeedback->workoutItem->workout_id ?? null;
+        $feedbackArray['workout_item_id'] = $workoutFeedback->workout_item_id;
+        unset($feedbackArray['workout_item']);
+
+        return response()->json(['status' => true, 'message' => $feedbackArray], 200);
     }
 
     /**

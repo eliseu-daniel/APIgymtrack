@@ -28,4 +28,14 @@ class Diet extends Model
     {
         return $this->hasMany(DietFeedback::class, 'diet_id');
     }
+
+    public function patient(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(Patient::class, 'patient_id');
+    }
+
+    public function items(): HasMany
+    {
+        return $this->hasMany(DietItem::class, 'diet_id');
+    }
 }

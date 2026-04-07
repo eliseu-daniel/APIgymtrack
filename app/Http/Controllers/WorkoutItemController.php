@@ -14,20 +14,24 @@ class WorkoutItemController extends Controller
      */
     public function index()
     {
+        $idEducator = request()->user()->id;
+        $items = WorkoutItem::with(['exercise', 'workout.patient'])
+            ->whereHas('workout.patient.registrations', function ($query) use ($idEducator) {
+                $query->where('educator_id', $idEducator);
+            })
+            ->where('is_active', true)
+            ->get()
+            ->map(function ($item) {
+                $itemArray = $item->toArray();
+                $itemArray['workout_item_id'] = $item->id;
+                $itemArray['exercise_name'] = $item->exercise['exercise'] ?? null;
+                unset($itemArray['exercise'], $itemArray['workout']);
+                return $itemArray;
+            });
+
         return response()->json([
             'status' => true,
-            'ItemWorkoutData' => WorkoutItem::select(
-                'workout_items.id as workout_item_id',
-                'workout_items.*',
-                'exercises.exercise as exercise_name'
-            )
-                ->join('exercises', 'workout_items.exercise_id', '=', 'exercises.id')
-                ->join('workouts', 'workout_items.workout_id', '=', 'workouts.id')
-                ->join('patients', 'workouts.patient_id', '=', 'patients.id')
-                ->join('patient_registrations', 'patient_registrations.patient_id', '=', 'patients.id')
-                ->where('patient_registrations.educator_id', request()->user()->id)
-                ->where('workout_items.is_active', true)
-                ->get()
+            'ItemWorkoutData' => $items
         ], 200);
     }
 
@@ -50,26 +54,17 @@ class WorkoutItemController extends Controller
         $itemWorkout = WorkoutItem::create($dataItemWorkout);
 
         if ($itemWorkout && $itemWorkout->send_notification) {
-            $data = WorkoutItem::query()
-                ->select([
-                    'workout_items.id as workoutItem_id',
-                    'patients.id as patient_id',
-                    'patients.name as patient_name',
-                    'patient_registrations.educator_id as educator_id'
-                ])
-                ->join('workouts', 'workouts.id', '=', 'workout_items.workout_id')
-                ->join('patients', 'patients.id', '=', 'workouts.patient_id')
-                ->join('patient_registrations', 'patient_registrations.patient_id', '=', 'patients.id')
-                ->where('workout_items.id', $itemWorkout->id)
-                ->where('patient_registrations.educator_id', $idEducator)
-                ->first();
+            $itemWithWorkout = WorkoutItem::with('workout.patient.registrations')->find($itemWorkout->id);
 
-            if ($data) {
-                NotifyPatientWorkoutItemConfirmedJob::dispatch(
-                    (int) $itemWorkout->id,
-                    (int) $data->patient_id,
-                    (int) $data->educator_id
-                );
+            if ($itemWithWorkout && $itemWithWorkout->workout && $itemWithWorkout->workout->patient) {
+                $registration = $itemWithWorkout->workout->patient->registrations->where('educator_id', $idEducator)->first();
+                if ($registration) {
+                    NotifyPatientWorkoutItemConfirmedJob::dispatch(
+                        (int) $itemWorkout->id,
+                        (int) $itemWithWorkout->workout->patient_id,
+                        (int) $registration->educator_id
+                    );
+                }
             }
         }
 
@@ -82,20 +77,25 @@ class WorkoutItemController extends Controller
     public function show(string $id)
     {
 
-
-        $itemWorkout = WorkoutItem::select('workout_items.*', 'exercises.exercise as exercise_name')
-            ->join('exercises', 'workout_items.exercise_id', '=', 'exercises.id')
-            ->join('workouts', 'workout_items.workout_id', '=', 'workouts.id')
-            ->join('patients', 'workouts.patient_id', '=', 'patients.id')
-            ->join('patient_registrations', 'patient_registrations.patient_id', '=', 'patients.id')
-            ->where('workout_items.id', $id)
-            ->where('patient_registrations.educator_id', request()->user()->id)
-            ->where('workout_items.is_active', true)
+        $idEducator = request()->user()->id;
+        $itemWorkout = WorkoutItem::with(['exercise', 'workout.patient'])
+            ->whereHas('workout.patient.registrations', function ($query) use ($idEducator) {
+                $query->where('educator_id', $idEducator);
+            })
+            ->where('id', $id)
+            ->where('is_active', true)
             ->first();
+
         if (!$itemWorkout) {
             return response()->json(['status' => false, 'message' => 'Item de treino não encontrado.'], 404);
         }
-        return response()->json(['status' => true, 'ItemWorkoutData' => $itemWorkout], 200);
+
+        $itemArray = $itemWorkout->toArray();
+        $itemArray['workout_item_id'] = $itemWorkout->id;
+        $itemArray['exercise_name'] = $itemWorkout->exercise['exercise'] ?? null;
+        unset($itemArray['exercise'], $itemArray['workout']);
+
+        return response()->json(['status' => true, 'ItemWorkoutData' => $itemArray], 200);
     }
 
     /**
@@ -121,26 +121,18 @@ class WorkoutItemController extends Controller
         $newData = WorkoutItem::create($newItemData);
 
         if (isset($newData->send_notification) && $newData->send_notification) {
-            $data = WorkoutItem::query()
-                ->select([
-                    'workout_items.id as workoutItem_id',
-                    'patients.id as patient_id',
-                    'patients.name as patient_name',
-                    'patient_registrations.educator_id as educator_id'
-                ])
-                ->join('workouts', 'workouts.id', '=', 'workout_items.workout_id')
-                ->join('patients', 'patients.id', '=', 'workouts.patient_id')
-                ->join('patient_registrations', 'patient_registrations.patient_id', '=', 'patients.id')
-                ->where('workout_items.id', $newData->id)
-                ->where('patient_registrations.educator_id', request()->user()->id)
-                ->first();
+            $itemWithWorkout = WorkoutItem::with('workout.patient.registrations')->find($newData->id);
+            $idEducator = request()->user()->id;
 
-            if ($data) {
-                NotifyPatientWorkoutItemConfirmedJob::dispatch(
-                    (int) $newData->id,
-                    (int) $data->patient_id,
-                    (int) $data->educator_id
-                );
+            if ($itemWithWorkout && $itemWithWorkout->workout && $itemWithWorkout->workout->patient) {
+                $registration = $itemWithWorkout->workout->patient->registrations->where('educator_id', $idEducator)->first();
+                if ($registration) {
+                    NotifyPatientWorkoutItemConfirmedJob::dispatch(
+                        (int) $newData->id,
+                        (int) $itemWithWorkout->workout->patient_id,
+                        (int) $registration->educator_id
+                    );
+                }
             }
         }
 
@@ -182,18 +174,23 @@ class WorkoutItemController extends Controller
     public function getForPacientWorkoutItem()
     {
         $idPatient = request()->user()->id;
+        $items = WorkoutItem::with('exercise')
+            ->whereHas('workout', function ($query) use ($idPatient) {
+                $query->where('patient_id', $idPatient);
+            })
+            ->orderBy('updated_at', 'desc')
+            ->get()
+            ->map(function ($item) {
+                $itemArray = $item->toArray();
+                $itemArray['workout_item_id'] = $item->id;
+                $itemArray['exercise_name'] = $item->exercise['exercise'] ?? null;
+                unset($itemArray['exercise'], $itemArray['workout']);
+                return $itemArray;
+            });
+
         return response()->json([
             'status' => true,
-            'ItemWorkoutData' => WorkoutItem::select(
-                'workout_items.id as workout_item_id',
-                'workout_items.*',
-                'exercises.exercise as exercise_name'
-            )
-                ->join('exercises', 'workout_items.exercise_id', '=', 'exercises.id')
-                ->join('workouts', 'workout_items.workout_id', '=', 'workouts.id')
-                ->where('workouts.patient_id', $idPatient)
-                ->orderBy('workout_items.updated_at', 'desc')
-                ->get()
+            'ItemWorkoutData' => $items
         ], 200);
     }
 }

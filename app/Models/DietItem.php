@@ -22,4 +22,19 @@ class DietItem extends Model
         'send_notification',
         'is_active',
     ];
+
+    public function diet()
+    {
+        return $this->belongsTo(Diet::class, 'diet_id');
+    }
+
+    public function food()
+    {
+        return $this->belongsTo(Food::class, 'food_id');
+    }
+
+    public function meal()
+    {
+        return $this->belongsTo(Meal::class, 'meals_id');
+    }
 }

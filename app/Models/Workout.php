@@ -28,4 +28,9 @@ class Workout extends Model
     {
         return $this->hasMany(WorkoutItem::class, 'workout_id');
     }
+
+    public function workoutType(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(WorkoutType::class, 'workout_type_id');
+    }
 }

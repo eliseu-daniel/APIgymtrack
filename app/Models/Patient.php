@@ -27,4 +27,14 @@ class Patient extends Authenticatable
     {
         return $this->hasMany(PatientRegistration::class, 'patient_id');
     }
+
+    public function diets(): HasMany
+    {
+        return $this->hasMany(Diet::class, 'patient_id');
+    }
+
+    public function workouts(): HasMany
+    {
+        return $this->hasMany(Workout::class, 'patient_id');
+    }
 }

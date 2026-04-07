@@ -15,15 +15,21 @@ class DietController extends Controller
     {
         $idEducator = request()->user()->id;
 
-        $diet = Diet::select('patients.name as patient_name', 'diets.id as diet_id', 'diets.*',)
-            ->join('patients', 'diets.patient_id', '=', 'patients.id')
-            ->join('patient_registrations', 'patient_registrations.patient_id', '=', 'patients.id')
-            ->where('patient_registrations.educator_id', $idEducator)
-            ->orderBy('diets.start_date', 'desc')
-            ->get();
+        $diets = Diet::with('patient')
+            ->whereHas('patient.registrations', function ($query) use ($idEducator) {
+                $query->where('educator_id', $idEducator);
+            })
+            ->orderBy('start_date', 'desc')
+            ->get()
+            ->map(function ($diet) {
+                $dietArray = $diet->toArray();
+                $dietArray['diet_id'] = $diet->id;
+                $dietArray['patient_name'] = $diet->patient['name'] ?? null;
+                unset($dietArray['patient']);
+                return $dietArray;
+            });
 
-
-        return response()->json(['diets' => $diet], 200);
+        return response()->json(['diets' => $diets], 200);
     }
 
     /**
@@ -51,14 +57,11 @@ class DietController extends Controller
     {
         $idEducator = request()->user()->id;
 
-        $diet = Diet::select([
-            'diets.*',
-            'patients.name as patient_name',
-        ])
-            ->join('patients', 'diets.patient_id', '=', 'patients.id')
-            ->join('patient_registrations', 'patient_registrations.patient_id', '=', 'patients.id')
-            ->where('patient_registrations.educator_id', $idEducator)
-            ->where('diets.id', $id)
+        $diet = Diet::with('patient')
+            ->whereHas('patient.registrations', function ($query) use ($idEducator) {
+                $query->where('educator_id', $idEducator);
+            })
+            ->where('id', $id)
             ->first();
 
         if (!$diet) {
@@ -68,9 +71,13 @@ class DietController extends Controller
             ], 404);
         }
 
+        $dietArray = $diet->toArray();
+        $dietArray['patient_name'] = $diet->patient['name'] ?? null;
+        unset($dietArray['patient']);
+
         return response()->json([
             'status' => true,
-            'diet' => $diet
+            'diet' => $dietArray
         ], 200);
     }
 
@@ -87,8 +94,18 @@ class DietController extends Controller
      */
     public function update(CreateDietRequest $request, string $id)
     {
+        $diet = Diet::find($id);
+        
+        if (!$diet) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Dieta não encontrada'
+            ], 404);
+        }
+
         $validated = $request->validated();
-        $diet = Diet::where('id', $id)->update($validated);
+        $diet->update($validated);
+        
         return response()->json(['status' => true, 'message' => 'Dieta atualizada com sucesso', 'data' => $diet], 200);
     }
 
@@ -114,10 +131,14 @@ class DietController extends Controller
     {
         $idPatient = auth('patient')->id();
 
-        $diets = Diet::select('diets.id as diet_id', 'diets.*', )
-            ->where('diets.patient_id', $idPatient)
-            ->orderBy('diets.start_date', 'desc')
-            ->get();
+        $diets = Diet::where('patient_id', $idPatient)
+            ->orderBy('start_date', 'desc')
+            ->get()
+            ->map(function ($diet) {
+                $dietArray = $diet->toArray();
+                $dietArray['diet_id'] = $diet->id;
+                return $dietArray;
+            });
 
         return response()->json(['diets' => $diets], 200);
     }

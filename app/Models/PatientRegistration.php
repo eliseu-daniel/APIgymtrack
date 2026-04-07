@@ -18,4 +18,14 @@ class PatientRegistration extends Model
         'end_date',
         'finalized_at'
     ];
+
+    public function patient()
+    {
+        return $this->belongsTo(Patient::class, 'patient_id');
+    }
+
+    public function educator()
+    {
+        return $this->belongsTo(Educator::class, 'educator_id');
+    }
 }
