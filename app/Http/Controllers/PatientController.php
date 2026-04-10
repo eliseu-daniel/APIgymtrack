@@ -50,9 +50,13 @@ class PatientController extends Controller
      */
     public function show(string $id)
     {
-        $patient = Patient::find($id);
+        $idEducator = request()->user()->id;
+        $patient = Patient::whereHas('registrations', function ($query) use ($idEducator) {
+            $query->where('educator_id', $idEducator);
+        })->where('id', $id)->first();
+
         if (!$patient) {
-            return response()->json(['status' => false, 'message' => 'Paciente não encontrado.'], 404);
+            return response()->json(['status' => false, 'message' => 'Paciente não encontrado'], 404);
         }
 
         $patient->birth_date = $patient->birth_date ? date('d/m/Y', strtotime($patient->birth_date)) : null;
@@ -73,7 +77,10 @@ class PatientController extends Controller
      */
     public function update(CreatePatientRequest $request, string $id)
     {
-        $patient = Patient::find($id);
+        $idEducator = $request->user()->id;
+        $patient = Patient::whereHas('registrations', function ($query) use ($idEducator) {
+            $query->where('educator_id', $idEducator);
+        })->where('id', $id)->first();
 
         if (!$patient) {
             return response()->json([
@@ -106,7 +113,11 @@ class PatientController extends Controller
      */
     public function destroy(string $id)
     {
-        $patient = Patient::find($id);
+        $idEducator = request()->user()->id;
+        $patient = Patient::whereHas('registrations', function ($query) use ($idEducator) {
+            $query->where('educator_id', $idEducator);
+        })->where('id', $id)->first();
+
         if (!$patient) {
             return response()->json(['status' => false, 'message' => 'Paciente não encontrado.'], 404);
         }

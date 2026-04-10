@@ -42,7 +42,17 @@ class AnthropometryController extends Controller
      */
     public function store(CreateAnthropometryRequest $request)
     {
+        $idEducator = $request->user()->id;
         $validator = $request->validated();
+
+        $isPatientValid = \App\Models\Patient::whereHas('registrations', function ($query) use ($idEducator) {
+            $query->where('educator_id', $idEducator);
+        })->where('id', $validator['patient_id'])->exists();
+
+        if (!$isPatientValid) {
+            return response()->json(['status' => false, 'message' => 'Paciente não encontrado ou não pertence a este educador'], 403);
+        }
+
         $anthopometry = Anthropometry::create($validator);
         return response()->json(['status' => true, 'message' => 'Antropometria criada com sucesso', 'data' => $anthopometry], 201);
     }
@@ -86,14 +96,21 @@ class AnthropometryController extends Controller
      */
     public function update(CreateAnthropometryRequest $request, string $id)
     {
-        $anthopometry = Anthropometry::find($id);
+        $idEducator = $request->user()->id;
+        $anthopometry = Anthropometry::select('anthropometries.*')
+            ->join('patients', 'patients.id', '=', 'anthropometries.patient_id')
+            ->join('patient_registrations', 'patient_registrations.patient_id', '=', 'patients.id')
+            ->where('anthropometries.id', $id)
+            ->where('patient_registrations.educator_id', $idEducator)
+            ->first();
+
         if (!$anthopometry) {
             return response()->json(['status' => false, 'message' => 'Anthropometry not found'], 404);
         }
 
         $validator = $request->validated();
 
-        $anthopometry = Anthropometry::where('id', $id)->update($validator);
+        $anthopometry->update($validator);
         return response()->json(['status' => true, 'message' => 'Antropometria atualizada com sucesso', 'data' => $anthopometry], 200);
     }
 
@@ -102,7 +119,14 @@ class AnthropometryController extends Controller
      */
     public function destroy(string $id)
     {
-        $anthopometry = Anthropometry::find($id);
+        $idEducator = request()->user()->id;
+        $anthopometry = Anthropometry::select('anthropometries.*')
+            ->join('patients', 'patients.id', '=', 'anthropometries.patient_id')
+            ->join('patient_registrations', 'patient_registrations.patient_id', '=', 'patients.id')
+            ->where('anthropometries.id', $id)
+            ->where('patient_registrations.educator_id', $idEducator)
+            ->first();
+
         if (!$anthopometry) {
             return response()->json(['status' => false, 'message' => 'Antropometria não encontrada'], 404);
         }

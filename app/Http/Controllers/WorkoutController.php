@@ -47,7 +47,17 @@ class WorkoutController extends Controller
      */
     public function store(CreateWorkoutRequest $request)
     {
+        $idEducator = $request->user()->id;
         $workoutValidated = $request->validated();
+
+        $isPatientValid = \App\Models\Patient::whereHas('registrations', function ($query) use ($idEducator) {
+            $query->where('educator_id', $idEducator);
+        })->where('id', $workoutValidated['patient_id'])->exists();
+
+        if (!$isPatientValid) {
+            return response()->json(['status' => false, 'message' => 'Paciente não encontrado ou não pertence a este educador'], 403);
+        }
+
         $workout = Workout::create($workoutValidated);
         return response()->json(['status' => true, 'message:' => 'Treino criado com sucesso', 'workout' => $workout], 201);
     }
@@ -93,7 +103,11 @@ class WorkoutController extends Controller
      */
     public function update(CreateWorkoutRequest $request, string $id)
     {
-        $workout = Workout::find($id);
+        $idEducator = $request->user()->id;
+        $workout = Workout::whereHas('patient.registrations', function ($query) use ($idEducator) {
+            $query->where('educator_id', $idEducator);
+        })->where('id', $id)->first();
+
         if (!$workout) {
             return response()->json(['status' => false, 'message' => 'Treino não encontrado'], 404);
         }
@@ -107,7 +121,11 @@ class WorkoutController extends Controller
      */
     public function destroy(string $id)
     {
-        $workout = Workout::find($id);
+        $idEducator = request()->user()->id;
+        $workout = Workout::whereHas('patient.registrations', function ($query) use ($idEducator) {
+            $query->where('educator_id', $idEducator);
+        })->where('id', $id)->first();
+
         if (!$workout) {
             return response()->json(['status' => false, 'message' => 'Treino não encontrado'], 404);
         }

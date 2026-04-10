@@ -51,6 +51,15 @@ class WorkoutItemController extends Controller
         $idEducator = request()->user()->id;
 
         $dataItemWorkout = $request->validated();
+
+        $isWorkoutValid = \App\Models\Workout::whereHas('patient.registrations', function ($query) use ($idEducator) {
+            $query->where('educator_id', $idEducator);
+        })->where('id', $dataItemWorkout['workout_id'])->exists();
+
+        if (!$isWorkoutValid) {
+            return response()->json(['status' => false, 'message' => 'Treino não encontrado ou não pertence a este educador'], 403);
+        }
+
         $itemWorkout = WorkoutItem::create($dataItemWorkout);
 
         if ($itemWorkout && $itemWorkout->send_notification) {
@@ -111,13 +120,25 @@ class WorkoutItemController extends Controller
      */
     public function update(CreateWorkoutItemRequest $request, string $id)
     {
-        $itemWorkout = WorkoutItem::find($id);
+        $idEducator = request()->user()->id;
+        $itemWorkout = WorkoutItem::whereHas('workout.patient.registrations', function ($query) use ($idEducator) {
+            $query->where('educator_id', $idEducator);
+        })->where('id', $id)->first();
+
         if (!$itemWorkout) {
             return response()->json(['status' => false, 'message' => 'Item de treino não encontrado.'], 404);
         }
         $itemWorkout->update(['is_active' => false]);
 
         $newItemData = $request->validated();
+
+        $isWorkoutValid = \App\Models\Workout::whereHas('patient.registrations', function ($query) use ($idEducator) {
+            $query->where('educator_id', $idEducator);
+        })->where('id', $newItemData['workout_id'])->exists();
+
+        if (!$isWorkoutValid) {
+            return response()->json(['status' => false, 'message' => 'Novo Treino não encontrado ou não pertence a este educador'], 403);
+        }
         $newData = WorkoutItem::create($newItemData);
 
         if (isset($newData->send_notification) && $newData->send_notification) {
@@ -144,7 +165,11 @@ class WorkoutItemController extends Controller
      */
     public function destroy(string $id)
     {
-        $itemWorkout = WorkoutItem::find($id);
+        $idEducator = request()->user()->id;
+        $itemWorkout = WorkoutItem::whereHas('workout.patient.registrations', function ($query) use ($idEducator) {
+            $query->where('educator_id', $idEducator);
+        })->where('id', $id)->first();
+
         if (!$itemWorkout) {
             return response()->json(['status' => false, 'message' => 'Item de treino não encontrado.'], 404);
         }

@@ -35,8 +35,17 @@ class PatientWeightController extends Controller
      */
     public function store(CreatePatientWeightRequest $request)
     {
-
+        $idEducator = $request->user()->id;
         $validated = $request->validated();
+
+        $isPatientValid = \App\Models\Patient::whereHas('registrations', function ($query) use ($idEducator) {
+            $query->where('educator_id', $idEducator);
+        })->where('id', $validated['patient_id'])->exists();
+
+        if (!$isPatientValid) {
+            return response()->json(['status' => false, 'message' => 'Paciente não encontrado ou não pertence a este educador'], 403);
+        }
+
         $weight = PatientWeight::create($validated);
         return response()->json(['status' => true, 'message' => 'Peso do paciente criado com sucesso', 'data' => $weight], 201);
     }
@@ -69,7 +78,17 @@ class PatientWeightController extends Controller
      */
     public function edit(string $id)
     {
-        $weight = PatientWeight::find($id);
+        $idEducator = request()->user()->id;
+        $weight = PatientWeight::select('patient_weights.*')
+            ->join('patients', 'patient_weights.patient_id', '=', 'patients.id')
+            ->join('patient_registrations', 'patient_registrations.patient_id', '=', 'patients.id')
+            ->where('patient_registrations.educator_id', $idEducator)
+            ->where('patient_weights.id', $id)->first();
+
+        if (!$weight) {
+            return response()->json(['status' => false, 'message' => 'Peso do paciente não encontrado'], 404);
+        }
+
         return response()->json(['status' => true, 'data' => $weight], 200);
     }
 
@@ -78,8 +97,19 @@ class PatientWeightController extends Controller
      */
     public function update(CreatePatientWeightRequest $request, string $id)
     {
+        $idEducator = $request->user()->id;
+        $weight = PatientWeight::select('patient_weights.*')
+            ->join('patients', 'patient_weights.patient_id', '=', 'patients.id')
+            ->join('patient_registrations', 'patient_registrations.patient_id', '=', 'patients.id')
+            ->where('patient_registrations.educator_id', $idEducator)
+            ->where('patient_weights.id', $id)->first();
+
+        if (!$weight) {
+            return response()->json(['status' => false, 'message' => 'Peso do paciente não encontrado'], 404);
+        }
+
         $validated = $request->validated();
-        $weight = PatientWeight::where('id', $id)->update($validated);
+        $weight->update($validated);
         return response()->json(['status' => true, 'message' => 'Peso do paciente atualizado com sucesso', 'data' => $weight], 200);
     }
 

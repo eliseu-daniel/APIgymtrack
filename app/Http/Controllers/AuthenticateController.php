@@ -61,10 +61,7 @@ class AuthenticateController extends Controller
 
     public function logout(Request $request)
     {
-        $user =
-            auth()->user() // guard padrão (educator no seu caso)
-            ?? auth('patient')->user()
-            ?? auth('administrator')->user();
+        $user = $request->user();
 
         if (!$user) {
             return response()->json([

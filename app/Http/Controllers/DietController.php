@@ -45,7 +45,17 @@ class DietController extends Controller
      */
     public function store(CreateDietRequest $request)
     {
+        $idEducator = $request->user()->id;
         $validated = $request->validated();
+
+        $isPatientValid = \App\Models\Patient::whereHas('registrations', function ($query) use ($idEducator) {
+            $query->where('educator_id', $idEducator);
+        })->where('id', $validated['patient_id'])->exists();
+
+        if (!$isPatientValid) {
+            return response()->json(['status' => false, 'message' => 'Paciente não encontrado ou não pertence a este educador'], 403);
+        }
+
         $diet = Diet::create($validated);
         return response()->json(['status' => true, 'message' => 'Dieta criada com sucesso', 'data' => $diet], 201);
     }
@@ -94,7 +104,10 @@ class DietController extends Controller
      */
     public function update(CreateDietRequest $request, string $id)
     {
-        $diet = Diet::find($id);
+        $idEducator = $request->user()->id;
+        $diet = Diet::whereHas('patient.registrations', function ($query) use ($idEducator) {
+            $query->where('educator_id', $idEducator);
+        })->where('id', $id)->first();
         
         if (!$diet) {
             return response()->json([
@@ -114,7 +127,15 @@ class DietController extends Controller
      */
     public function destroy(string $id)
     {
-        $diet = Diet::find($id);
+        $idEducator = request()->user()->id;
+        $diet = Diet::whereHas('patient.registrations', function ($query) use ($idEducator) {
+            $query->where('educator_id', $idEducator);
+        })->where('id', $id)->first();
+
+        if (!$diet) {
+            return response()->json(['status' => false, 'message' => 'Dieta não encontrada'], 404);
+        }
+
         $diet->update(['finalized_at' => now()]);
         return response()->json(['status' => true, 'message' => 'Dieta finalizada com sucesso'], 200);
     }

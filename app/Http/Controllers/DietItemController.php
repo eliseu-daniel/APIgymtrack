@@ -56,6 +56,15 @@ class DietItemController extends Controller
         $idEducator = request()->user()->id;
 
         $validator = $request->validated();
+
+        $isDietValid = \App\Models\Diet::whereHas('patient.registrations', function ($query) use ($idEducator) {
+            $query->where('educator_id', $idEducator);
+        })->where('id', $validator['diet_id'])->exists();
+
+        if (!$isDietValid) {
+            return response()->json(['status' => false, 'message' => 'Dieta não encontrada ou não pertence a este educador'], 403);
+        }
+
         $dietItem = DietItem::create($validator);
 
         if ($dietItem->send_notification == true) {
@@ -121,13 +130,26 @@ class DietItemController extends Controller
     {
         $idEducator = request()->user()->id;
 
-        $item = DietItem::find($id);
+        $item = DietItem::whereHas('diet.patient.registrations', function ($query) use ($idEducator) {
+            $query->where('educator_id', $idEducator);
+        })->where('id', $id)->first();
 
         if (!$item) {
             return response()->json([
                 'status' => false,
                 'message' => 'Item de dieta não encontrado.'
             ], 404);
+        }
+
+        $validated = $request->validated();
+
+        // Check if the new diet_id (if provided and different) also belongs to this educator
+        $isDietValid = \App\Models\Diet::whereHas('patient.registrations', function ($query) use ($idEducator) {
+            $query->where('educator_id', $idEducator);
+        })->where('id', $validated['diet_id'])->exists();
+
+        if (!$isDietValid) {
+            return response()->json(['status' => false, 'message' => 'Nova Dieta não encontrada ou não pertence a este educador'], 403);
         }
 
         $item->update(['is_active' => false]);
@@ -163,7 +185,11 @@ class DietItemController extends Controller
      */
     public function destroy(string $id)
     {
-        $Item = DietItem::find($id);
+        $idEducator = request()->user()->id;
+        $Item = DietItem::whereHas('diet.patient.registrations', function ($query) use ($idEducator) {
+            $query->where('educator_id', $idEducator);
+        })->where('id', $id)->first();
+        
         if (!$Item) {
             return response()->json(['status' => false, 'message' => 'Item de dieta não encontrado.'], 404);
         }

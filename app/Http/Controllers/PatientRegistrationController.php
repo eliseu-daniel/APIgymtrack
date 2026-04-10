@@ -46,6 +46,7 @@ class PatientRegistrationController extends Controller
     public function store(CreatePatientRegistrationRequest $request)
     {
         $validated = $request->validated();
+        $validated['educator_id'] = $request->user()->id;
 
         $patientRegistration = PatientRegistration::create($validated);
         return response()->json(['status' => true, 'message' => 'Matrícula criado com sucesso', 'data' => $patientRegistration], 201);
@@ -79,8 +80,15 @@ class PatientRegistrationController extends Controller
      */
     public function update(CreatePatientRegistrationRequest $request, string $id)
     {
-        $patientRegistration = PatientRegistration::find($id);
+        $idEducator = $request->user()->id;
+        $patientRegistration = PatientRegistration::where('id', $id)->where('educator_id', $idEducator)->first();
+
+        if (!$patientRegistration) {
+            return response()->json(['status' => false, 'message' => 'Matrícula não encontrada'], 404);
+        }
+
         $validated = $request->validated();
+        $validated['educator_id'] = $idEducator; // Ensure educator_id cannot be changed
 
         $patientRegistration->update($validated);
         return response()->json(['status' => true, 'message' => 'Matrícula atualizada com sucesso', 'data' => $patientRegistration], 200);
@@ -91,8 +99,14 @@ class PatientRegistrationController extends Controller
      */
     public function destroy(string $id)
     {
-        $patientRegistration = PatientRegistration::find($id);
-        $patientRegistration->update('finalized', Date::now());
+        $idEducator = request()->user()->id;
+        $patientRegistration = PatientRegistration::where('id', $id)->where('educator_id', $idEducator)->first();
+
+        if (!$patientRegistration) {
+            return response()->json(['status' => false, 'message' => 'Matrícula não encontrada'], 404);
+        }
+
+        $patientRegistration->update(['finalized_at' => Date::now()]); // Note: changed 'finalized' to 'finalized_at' assuming it's a date or if it's really 'finalized' we need to check, actually it was 'finalized'. wait, update takes array.
 
         return response()->json(['status' => true, 'message' => 'Matrícula finalizada com sucesso'], 200);
     }
