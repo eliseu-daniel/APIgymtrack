@@ -136,7 +136,7 @@ class DietController extends Controller
             return response()->json(['status' => false, 'message' => 'Dieta não encontrada'], 404);
         }
 
-        $diet->update(['finalized_at' => now()]);
+        $diet->delete();
         return response()->json(['status' => true, 'message' => 'Dieta finalizada com sucesso'], 200);
     }
 
