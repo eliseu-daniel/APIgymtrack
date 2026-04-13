@@ -2,7 +2,7 @@
 
 API REST desenvolvida em Laravel para gerenciamento de pacientes, educadores físicos, dietas, treinos e acompanhamento físico do sistema GymTrack.
 
-O projeto utiliza Docker Compose apenas para o banco de dados, enquanto a aplicação Laravel roda localmente.
+O projeto utiliza Docker Compose para rodar a aplicação Laravel e o banco de dados MySQL.
 
 🚀 Tecnologias
 
@@ -16,73 +16,77 @@ O projeto utiliza Docker Compose apenas para o banco de dados, enquanto a aplica
 
 Você precisa ter instalado:
 
-- PHP 8.2
-
-- Composer
-
 - Docker
-
 - Docker Compose
 
 🛠️ Instalação
+
 1️⃣ Clone o repositório
 
 ```
-git clone https://github.com/eliseu-daniel/APIgymtrack.
-```
-```
+git clone https://github.com/eliseu-daniel/APIgymtrack.git
 cd APIgymtrack
 ```
-2️⃣ Suba apenas o banco de dados
-```
-docker-compose up -d
-```
 
-Isso irá subir somente o container do MySQL.
+2️⃣ Configure o .env
 
-3️⃣ Instale as dependências
-```
-composer install
-```
-
-4️⃣ Configure o .env
 ```
 cp .env.example .env
 ```
 
-Configure a conexão com o banco:
+Configure as variáveis de ambiente conforme necessário. As configurações padrão já estão ajustadas para Docker:
+
 ```
 DB_CONNECTION=mysql
-DB_HOST=127.0.0.1
+DB_HOST=mysql
 DB_PORT=3306
 DB_DATABASE=gymtrack
-DB_USERNAME=root
-DB_PASSWORD=root
+DB_USERNAME=user
+DB_PASSWORD=password
+MYSQL_ROOT_PASSWORD=password
 ```
 
-(ajuste conforme seu docker-compose.yml)
+3️⃣ Suba os containers
 
-5️⃣ Gere a chave
 ```
-php artisan key:generate
-```
-6️⃣ Rode as migrations
-```
-php artisan migrate
+docker compose up --build -d
 ```
 
-(Opcional)
+Isso irá construir a imagem da aplicação e subir os containers para a app e o banco de dados.
+
+4️⃣ Rode as migrations (dentro do container)
+
 ```
-php artisan db:seed
+docker compose exec app php artisan migrate
 ```
+
+(Opcional) Rode os seeders:
+
+```
+docker compose exec app php artisan db:seed
+```
+
+ou caso de erro de seed, assim reseta o banco ja com criando com o seed
+```
+
+docker compose exec app php artisan migrate:fresh --seed
+```
+
 ▶️ Executando a API
-```
-php artisan serve
-```
 
-API disponível em:
+A API estará disponível em:
 
 http://localhost:8000
+
+Para parar os containers:
+
+```
+docker compose down
+```
+ou remover todos os containers do sistema
+```
+sudo docker rm -f (sudo docker ps -aq)
+```
 
 🔐 Autenticação
 
@@ -91,6 +95,7 @@ A API usa Laravel Sanctum.
 Login
 
 POST /api/login
+
 ```js
 {
   "email": "educador@email.com",
@@ -114,3 +119,4 @@ Authorization: Bearer TOKEN
 📄 Licença
 
 MIT
+```
