@@ -33,6 +33,17 @@ services:
       - "${DB_PORT}:3306"
     volumes:
       - db_data:/var/lib/mysql
+      
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: phpmyadmin
+    ports:
+      - "8080:80"
+    environment:
+      PMA_HOST: mysql
+      PMA_PORT: 3306
+    depends_on:
+      - mysql
 
 volumes:
   db_data:

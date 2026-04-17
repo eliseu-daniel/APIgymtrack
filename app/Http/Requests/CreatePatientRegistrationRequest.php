@@ -47,30 +47,30 @@ class CreatePatientRegistrationRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'patient_id'        => 'required|exists:patients,id',
-            'educator_id'       => 'required|exists:educators,id',
-            'plan_description'  => 'required|in:monthly,quarterly,semiannual',
-            'start_date'        => 'required|date_format:Y-m-d',
-            'end_date'          => 'required|date_format:Y-m-d|after_or_equal:start_date',
-            'finalized_at'       => 'sometimes|date_format:Y-m-d|after_or_equal:end_date',
+            'patient_id' => 'required|exists:patients,id',
+            'educator_id' => 'required|exists:educators,id',
+            'plan_description' => 'required|in:monthly,quarterly,semiannual',
+            'start_date' => 'required|date_format:Y-m-d',
+            'end_date' => 'required|date_format:Y-m-d|after_or_equal:start_date',
+            'finalized_at' => 'sometimes|date_format:Y-m-d|after_or_equal:end_date',
         ];
     }
 
     public function messages(): array
     {
         return [
-            'patient_id.required'       => 'O campo paciente é obrigatório.',
-            'patient_id.exists'         => 'O paciente selecionado não existe.',
-            'educator_id.required'      => 'O campo educador é obrigatório.',
-            'educator_id.exists'        => 'O educador selecionado não existe.',
+            'patient_id.required' => 'O campo paciente é obrigatório.',
+            'patient_id.exists' => 'O paciente selecionado não existe.',
+            'educator_id.required' => 'O campo educador é obrigatório.',
+            'educator_id.exists' => 'O educador selecionado não existe.',
             'plan_description.required' => 'O campo descrição do plano é obrigatório.',
-            'plan_description.in'       => 'A descrição do plano deve ser mensal, trimestral ou semestral.',
-            'start_date.required'       => 'O campo data de início é obrigatório.',
-            'start_date.date'           => 'O campo data de início deve ser uma data válida.',
-            'end_date.required'         => 'O campo data de término é obrigatório.',
-            'end_date.date'             => 'O campo data de término deve ser uma data válida.',
-            'end_date.after_or_equal'   => 'A data de término deve ser igual ou posterior à data de início.',
-            'finalized_at.date'         => 'O campo data de finalização deve ser uma data válida.',
+            'plan_description.in' => 'A descrição do plano deve ser mensal, trimestral ou semestral.',
+            'start_date.required' => 'O campo data de início é obrigatório.',
+            'start_date.date' => 'O campo data de início deve ser uma data válida.',
+            'end_date.required' => 'O campo data de término é obrigatório.',
+            'end_date.date' => 'O campo data de término deve ser uma data válida.',
+            'end_date.after_or_equal' => 'A data de término deve ser igual ou posterior à data de início.',
+            'finalized_at.date' => 'O campo data de finalização deve ser uma data válida.',
             'finalized_at.after_or_equal' => 'A data de finalização deve ser igual ou posterior à data de término.',
         ];
     }

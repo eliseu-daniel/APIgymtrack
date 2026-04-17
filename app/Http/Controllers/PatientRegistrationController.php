@@ -7,7 +7,7 @@ use App\Models\Patient;
 use App\Models\PatientRegistration;
 use App\Services\DateServices;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Date;
+use Carbon\Carbon;
 
 class PatientRegistrationController extends Controller
 {
@@ -47,6 +47,18 @@ class PatientRegistrationController extends Controller
     {
         $validated = $request->validated();
         $validated['educator_id'] = $request->user()->id;
+
+        // Finalize previous registration if exists
+        $previousRegistration = PatientRegistration::where('patient_id', $validated['patient_id'])
+            ->whereNull('finalized_at')
+            ->first();
+
+        if ($previousRegistration) {
+            $previousRegistration->update([
+                'end_date' => $validated['start_date'],
+                'finalized_at' => Carbon::now(),
+            ]);
+        }
 
         $patientRegistration = PatientRegistration::create($validated);
         return response()->json(['status' => true, 'message' => 'Matrícula criado com sucesso', 'data' => $patientRegistration], 201);
@@ -106,7 +118,7 @@ class PatientRegistrationController extends Controller
             return response()->json(['status' => false, 'message' => 'Matrícula não encontrada'], 404);
         }
 
-        $patientRegistration->update(['finalized_at' => Date::now()]); // Note: changed 'finalized' to 'finalized_at' assuming it's a date or if it's really 'finalized' we need to check, actually it was 'finalized'. wait, update takes array.
+        $patientRegistration->update(['finalized_at' => Carbon::now()]); // Note: changed 'finalized' to 'finalized_at' assuming it's a date or if it's really 'finalized' we need to check, actually it was 'finalized'. wait, update takes array.
 
         return response()->json(['status' => true, 'message' => 'Matrícula finalizada com sucesso'], 200);
     }
