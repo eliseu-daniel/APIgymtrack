@@ -120,3 +120,53 @@ Authorization: Bearer TOKEN
 
 MIT
 ```
+
+🏭 Build para Produção
+
+Para rodar a aplicação em ambiente de produção, utilize o Dockerfile.prod.
+
+🔨 Build da imagem
+```
+docker build -f Dockerfile.prod -t gymtrack-api .
+```
+▶️ Rodar o container
+```
+docker run -d \
+  -p 8000:80 \
+  --env-file .env \
+  --name gymtrack-api \
+  gymtrack-api
+```
+⚠️ Importante (Produção)
+
+Antes de rodar em produção:
+
+1️⃣ Defina a APP_KEY manualmente
+
+No .env:
+```
+APP_KEY=base64:SUA_CHAVE_AQUI
+```
+Se precisar gerar:
+
+```
+php artisan key:generate --show
+```
+
+2️⃣ Configure corretamente o ambiente
+
+APP_ENV=production
+
+APP_DEBUG=false
+
+3️⃣ Banco de dados
+
+Garanta que o banco esteja acessível:
+```
+DB_HOST=seu_host_mysql
+```
+
+4️⃣ Rodar migrations
+```
+docker exec -it gymtrack-api php artisan migrate --force
+```

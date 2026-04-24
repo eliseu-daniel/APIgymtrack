@@ -13,9 +13,7 @@ RUN apt-get update && apt-get upgrade -y && apt-get install -y \
   libxml2-dev \
   libzip-dev \
   zip \
-  unzip \
-  nodejs \
-  npm
+  unzip
 
 # Clear cache
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
@@ -51,9 +49,6 @@ COPY . .
 
 # Run post-install scripts
 RUN composer run-script post-autoload-dump
-
-# Install Node.js dependencies and build assets
-RUN npm install && npm run build
 
 # Generate application key if not set
 RUN php artisan key:generate --no-interaction

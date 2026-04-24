@@ -1,0 +1,60 @@
+# ---------- STAGE 1: Composer (build das dependências) ----------
+FROM composer:2 AS composer
+
+WORKDIR /app
+
+COPY composer.json composer.lock ./
+
+RUN composer install \
+  --no-dev \
+  --optimize-autoloader \
+  --no-interaction \
+  --no-scripts
+
+# ---------- STAGE 2: PHP + Apache ----------
+FROM php:8.4-apache
+
+WORKDIR /var/www/html
+
+# Instala dependências do sistema
+RUN apt-get update && apt-get install -y \
+  libpng-dev \
+  libonig-dev \
+  libxml2-dev \
+  libzip-dev \
+  zip \
+  unzip \
+  && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Extensões PHP
+RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip
+
+# Apache config
+RUN a2enmod rewrite
+
+RUN echo '<VirtualHost *:80>\n\
+  DocumentRoot /var/www/html/public\n\
+  <Directory /var/www/html/public>\n\
+    AllowOverride All\n\
+    Require all granted\n\
+  </Directory>\n\
+</VirtualHost>' > /etc/apache2/sites-available/000-default.conf
+
+# Copia dependências do stage composer
+COPY --from=composer /app/vendor ./vendor
+
+# Copia aplicação
+COPY . .
+
+# Otimizações Laravel
+RUN php artisan config:cache \
+  && php artisan route:cache \
+  && php artisan view:cache
+
+# Permissões
+RUN chown -R www-data:www-data /var/www/html \
+  && chmod -R 755 storage bootstrap/cache
+
+EXPOSE 80
+
+CMD ["apache2-foreground"]
