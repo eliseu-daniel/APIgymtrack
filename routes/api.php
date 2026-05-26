@@ -32,6 +32,7 @@ Route::post('/register', [AuthenticateController::class, 'register'])->name('reg
 Route::post('/login', [AuthenticateController::class, 'login']);
 Route::post('/loginPatient', [AuthenticateController::class, 'loginPatient']);
 Route::post('/loginAdministrator', [AuthenticateController::class, 'loginAdministrator']);
+Route::get('/download', [AuthenticateController::class, 'download']);
 
 Route::middleware('auth:sanctum')->prefix('educators')->group(function () {
     Route::post('logout', [AuthenticateController::class, 'logout']);

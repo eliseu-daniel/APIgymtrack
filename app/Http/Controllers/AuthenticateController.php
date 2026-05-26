@@ -141,4 +141,19 @@ class AuthenticateController extends Controller
             'administrator' => $administrator,
         ], 200);
     }
+
+    public function download(Request $request)
+    {
+        $filePath = public_path('synchrofit.apk');
+
+        if (!file_exists($filePath)) {
+            return response()->json([
+                'message' => 'Arquivo não encontrado.'
+            ], 404);
+        }
+
+        return response()->download($filePath, 'synchrofit.apk', [
+            'Content-Type' => 'application/vnd.android.package-archive',
+        ]);
+    }
 }
