@@ -100,8 +100,8 @@ class DietController extends Controller
     public function destroy(string $id)
     {
         $diet = Diet::find($id);
-        $diet->update(['finalized_at' => now()]);
-        return response()->json(['status' => true, 'message' => 'Dieta finalizada com sucesso'], 200);
+        $diet->delete();
+        return response()->json(['status' => true, 'message' => 'Dieta removida com sucesso'], 200);
     }
 
     public function finishDiet(Request $request)
