@@ -152,8 +152,11 @@ class AuthenticateController extends Controller
             ], 404);
         }
 
-        return response()->download($filePath, 'synchrofit.apk', [
-            'Content-Type' => 'application/vnd.android.package-archive',
-        ]);
+	return response()->download(
+    	$filePath, 'synchrofit.apk',
+    	[
+        'Content-Type' => 'application/vnd.android.package-archive',
+        'Content-Disposition' => 'attachment; filename="synchrofit.apk"',
+    	]);
     }
 }

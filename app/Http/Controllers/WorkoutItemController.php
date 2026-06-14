@@ -6,6 +6,7 @@ use App\Http\Requests\CreateWorkoutItemRequest;
 use App\Jobs\NotifyPatientWorkoutItemConfirmedJob;
 use App\Models\WorkoutItem;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class WorkoutItemController extends Controller
 {
@@ -111,40 +112,50 @@ class WorkoutItemController extends Controller
      */
     public function update(CreateWorkoutItemRequest $request, string $id)
     {
-        $itemWorkout = WorkoutItem::find($id);
-        if (!$itemWorkout) {
-            return response()->json(['status' => false, 'message' => 'Item de treino não encontrado.'], 404);
-        }
-        $itemWorkout->update(['is_active' => false]);
-
-        $newItemData = $request->validated();
-        $newData = WorkoutItem::create($newItemData);
-
-        if (isset($newData->send_notification) && $newData->send_notification) {
-            $data = WorkoutItem::query()
-                ->select([
-                    'workout_items.id as workoutItem_id',
-                    'patients.id as patient_id',
-                    'patients.name as patient_name',
-                    'patient_registrations.educator_id as educator_id'
-                ])
-                ->join('workouts', 'workouts.id', '=', 'workout_items.workout_id')
-                ->join('patients', 'patients.id', '=', 'workouts.patient_id')
-                ->join('patient_registrations', 'patient_registrations.patient_id', '=', 'patients.id')
-                ->where('workout_items.id', $newData->id)
-                ->where('patient_registrations.educator_id', request()->user()->id)
-                ->first();
-
-            if ($data) {
-                NotifyPatientWorkoutItemConfirmedJob::dispatch(
-                    (int) $newData->id,
-                    (int) $data->patient_id,
-                    (int) $data->educator_id
-                );
+        try {
+            $itemWorkout = WorkoutItem::find($id);
+            if (!$itemWorkout) {
+                return response()->json(['status' => false, 'message' => 'Item de treino não encontrado.'], 404);
             }
-        }
+            $itemWorkout->update(['is_active' => false]);
 
-        return response()->json(['status' => true, 'message' => 'Item de treino atualizado com sucesso!', 'ItemWorkoutData' => $newData], 200);
+            $newItemData = $request->validated();
+            $newData = WorkoutItem::create($newItemData);
+
+            if (isset($newData->send_notification) && $newData->send_notification) {
+                $data = WorkoutItem::query()
+                    ->select([
+                        'workout_items.id as workoutItem_id',
+                        'patients.id as patient_id',
+                        'patients.name as patient_name',
+                        'patient_registrations.educator_id as educator_id'
+                    ])
+                    ->join('workouts', 'workouts.id', '=', 'workout_items.workout_id')
+                    ->join('patients', 'patients.id', '=', 'workouts.patient_id')
+                    ->join('patient_registrations', 'patient_registrations.patient_id', '=', 'patients.id')
+                    ->where('workout_items.id', $newData->id)
+                    ->where('patient_registrations.educator_id', request()->user()->id)
+                    ->first();
+
+                if ($data) {
+                    NotifyPatientWorkoutItemConfirmedJob::dispatch(
+                        (int) $newData->id,
+                        (int) $data->patient_id,
+                        (int) $data->educator_id
+                    );
+                }
+            }
+
+            return response()->json(['status' => true, 'message' => 'Item de treino atualizado com sucesso!', 'ItemWorkoutData' => $newData], 200);
+        } catch (\Throwable $e) {
+            Log::error('Erro ao atualizar workout item', [
+                'id' => $id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            return response()->json(['status' => false, 'message' => 'Erro ao atualizar item de treino.'], 500);
+        }
     }
 
     /**
