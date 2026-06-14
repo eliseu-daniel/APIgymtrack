@@ -29,10 +29,11 @@ class DietItemController extends Controller
             )
                 ->join('diets', 'diets.id', '=', 'diet_items.diet_id')
                 ->join('patients', 'patients.id', '=', 'diets.patient_id')
-                ->join('patient_registrations', 'patient_registrations.patient_id', '=', 'patients.id')
                 ->join('food', 'food.id', '=', 'diet_items.food_id')
                 ->join('meals', 'meals.id', '=', 'diet_items.meals_id')
-                ->where('patient_registrations.educator_id', $idEducator)
+                ->whereIn('patients.id', function ($q) use ($idEducator) {
+                    $q->select('patient_id')->from('patient_registrations')->where('educator_id', $idEducator);
+                })
                 ->where('diet_items.is_active', true)
                 ->get()
         ], 200);
@@ -56,13 +57,10 @@ class DietItemController extends Controller
         $validator = $request->validated();
         $dietItem = DietItem::create($validator);
 
-        if ($dietItem->send_notification = true) {
+        if ($dietItem->send_notification == true) {
             $itemWithDiet = DietItem::query()
-                ->select('diet_items.id', 'diets.patient_id', 'patient_registrations.educator_id')
+                ->select('diet_items.id', 'diets.patient_id')
                 ->join('diets', 'diets.id', '=', 'diet_items.diet_id')
-                ->join('patients', 'patients.id', '=', 'diets.patient_id')
-                ->join('patient_registrations', 'patient_registrations.patient_id', '=', 'patients.id')
-                ->where('patient_registrations.educator_id', $idEducator)
                 ->where('diet_items.id', $dietItem->id)
                 ->first();
 
@@ -70,7 +68,7 @@ class DietItemController extends Controller
                 NotifyPatientDietItemConfirmedJob::dispatch(
                     (int) $dietItem->id,
                     (int) $itemWithDiet->patient_id,
-                    (int) $itemWithDiet->educator_id
+                    $idEducator
                 );
             }
         }
@@ -96,10 +94,11 @@ class DietItemController extends Controller
         )
             ->join('diets', 'diets.id', '=', 'diet_items.diet_id')
             ->join('patients', 'patients.id', '=', 'diets.patient_id')
-            ->join('patient_registrations', 'patient_registrations.patient_id', '=', 'patients.id')
             ->join('food', 'food.id', '=', 'diet_items.food_id')
             ->join('meals', 'meals.id', '=', 'diet_items.meals_id')
-            ->where('patient_registrations.educator_id', $idEducator)
+            ->whereIn('patients.id', function ($q) use ($idEducator) {
+                $q->select('patient_id')->from('patient_registrations')->where('educator_id', $idEducator);
+            })
             ->where('diet_items.id', $id)
             ->where('diet_items.is_active', true)
             ->first();
@@ -140,13 +139,10 @@ class DietItemController extends Controller
 
         $newItem = DietItem::create($validated);
 
-        if ($newItem->send_notification = true) {
+        if ($newItem->send_notification == true) {
             $itemWithDiet = DietItem::query()
-                ->select('diet_items.id', 'diets.patient_id', 'patient_registrations.educator_id')
+                ->select('diet_items.id', 'diets.patient_id')
                 ->join('diets', 'diets.id', '=', 'diet_items.diet_id')
-                ->join('patients', 'patients.id', '=', 'diets.patient_id')
-                ->join('patient_registrations', 'patient_registrations.patient_id', '=', 'patients.id')
-                ->where('patient_registrations.educator_id', $idEducator)
                 ->where('diet_items.id', $newItem->id)
                 ->first();
 
@@ -154,7 +150,7 @@ class DietItemController extends Controller
                 NotifyPatientDietItemConfirmedJob::dispatch(
                     (int) $newItem->id,
                     (int) $itemWithDiet->patient_id,
-                    (int) $itemWithDiet->educator_id
+                    $idEducator
                 );
             }
         }

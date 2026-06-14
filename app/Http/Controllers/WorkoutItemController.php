@@ -25,8 +25,9 @@ class WorkoutItemController extends Controller
                 ->join('exercises', 'workout_items.exercise_id', '=', 'exercises.id')
                 ->join('workouts', 'workout_items.workout_id', '=', 'workouts.id')
                 ->join('patients', 'workouts.patient_id', '=', 'patients.id')
-                ->join('patient_registrations', 'patient_registrations.patient_id', '=', 'patients.id')
-                ->where('patient_registrations.educator_id', request()->user()->id)
+                ->whereIn('patients.id', function ($q) {
+                    $q->select('patient_id')->from('patient_registrations')->where('educator_id', request()->user()->id);
+                })
                 ->where('workout_items.is_active', true)
                 ->get()
         ], 200);
@@ -55,15 +56,13 @@ class WorkoutItemController extends Controller
                 ->select([
                     'workout_items.id as workoutItem_id',
                     'patients.id as patient_id',
-                    'patients.name as patient_name',
-                    'patient_registrations.educator_id as educator_id'
+                    'patients.name as patient_name'
                 ])
                 ->join('workouts', 'workouts.id', '=', 'workout_items.workout_id')
                 ->join('patients', 'patients.id', '=', 'workouts.patient_id')
-                ->join('patient_registrations', 'patient_registrations.patient_id', '=', 'patients.id')
                 ->where('workout_items.id', $itemWorkout->id)
-                ->where('patient_registrations.educator_id', $idEducator)
                 ->first();
+            $data->educator_id = $idEducator;
 
             if ($data) {
                 NotifyPatientWorkoutItemConfirmedJob::dispatch(
@@ -88,9 +87,10 @@ class WorkoutItemController extends Controller
             ->join('exercises', 'workout_items.exercise_id', '=', 'exercises.id')
             ->join('workouts', 'workout_items.workout_id', '=', 'workouts.id')
             ->join('patients', 'workouts.patient_id', '=', 'patients.id')
-            ->join('patient_registrations', 'patient_registrations.patient_id', '=', 'patients.id')
             ->where('workout_items.id', $id)
-            ->where('patient_registrations.educator_id', request()->user()->id)
+            ->whereIn('patients.id', function ($q) {
+                $q->select('patient_id')->from('patient_registrations')->where('educator_id', request()->user()->id);
+            })
             ->where('workout_items.is_active', true)
             ->first();
         if (!$itemWorkout) {
@@ -127,15 +127,13 @@ class WorkoutItemController extends Controller
                     ->select([
                         'workout_items.id as workoutItem_id',
                         'patients.id as patient_id',
-                        'patients.name as patient_name',
-                        'patient_registrations.educator_id as educator_id'
+                        'patients.name as patient_name'
                     ])
                     ->join('workouts', 'workouts.id', '=', 'workout_items.workout_id')
                     ->join('patients', 'patients.id', '=', 'workouts.patient_id')
-                    ->join('patient_registrations', 'patient_registrations.patient_id', '=', 'patients.id')
                     ->where('workout_items.id', $newData->id)
-                    ->where('patient_registrations.educator_id', request()->user()->id)
                     ->first();
+                $data->educator_id = request()->user()->id;
 
                 if ($data) {
                     NotifyPatientWorkoutItemConfirmedJob::dispatch(

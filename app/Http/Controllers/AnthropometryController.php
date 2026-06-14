@@ -23,8 +23,9 @@ class AnthropometryController extends Controller
                 'patients.name',
             )
                 ->join('patients', 'patients.id', '=', 'anthropometries.patient_id')
-                ->join('patient_registrations', 'patient_registrations.patient_id', '=', 'patients.id')
-                ->where('patient_registrations.educator_id', $idEducator)
+                ->whereIn('patients.id', function ($q) use ($idEducator) {
+                    $q->select('patient_id')->from('patient_registrations')->where('educator_id', $idEducator);
+                })
                 ->get()
         ], 200);
     }
@@ -59,9 +60,10 @@ class AnthropometryController extends Controller
             'anthropometries.*'
         )
             ->join('patients', 'patients.id', '=', 'anthropometries.patient_id')
-            ->join('patient_registrations', 'patient_registrations.patient_id', '=', 'patients.id')
             ->where('anthropometries.id', $id)
-            ->where('patient_registrations.educator_id', $idEducator)
+            ->whereIn('patients.id', function ($q) use ($idEducator) {
+                $q->select('patient_id')->from('patient_registrations')->where('educator_id', $idEducator);
+            })
             ->first();
         if (!$idEducator) {
             return response()->json(['status' => false, 'message' => 'Antropometria não encontrada'], 404);

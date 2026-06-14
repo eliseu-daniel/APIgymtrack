@@ -15,10 +15,11 @@ class DietController extends Controller
     {
         $idEducator = request()->user()->id;
 
-        $diet = Diet::select('patients.name as patient_name', 'diets.id as diet_id', 'diets.*',)
+        $diet = Diet::select('patients.name as patient_name', 'diets.id as diet_id', 'diets.*')
             ->join('patients', 'diets.patient_id', '=', 'patients.id')
-            ->join('patient_registrations', 'patient_registrations.patient_id', '=', 'patients.id')
-            ->where('patient_registrations.educator_id', $idEducator)
+            ->whereIn('patients.id', function ($q) use ($idEducator) {
+                $q->select('patient_id')->from('patient_registrations')->where('educator_id', $idEducator);
+            })
             ->orderBy('diets.start_date', 'desc')
             ->get();
 
@@ -56,8 +57,9 @@ class DietController extends Controller
             'patients.name as patient_name',
         ])
             ->join('patients', 'diets.patient_id', '=', 'patients.id')
-            ->join('patient_registrations', 'patient_registrations.patient_id', '=', 'patients.id')
-            ->where('patient_registrations.educator_id', $idEducator)
+            ->whereIn('patients.id', function ($q) use ($idEducator) {
+                $q->select('patient_id')->from('patient_registrations')->where('educator_id', $idEducator);
+            })
             ->where('diets.id', $id)
             ->first();
 

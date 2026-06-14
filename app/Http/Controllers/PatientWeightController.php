@@ -17,8 +17,9 @@ class PatientWeightController extends Controller
 
         $weight = PatientWeight::select('patient_weights.*', 'patients.id as patient_id', 'patients.name')
             ->join('patients', 'patient_weights.patient_id', '=', 'patients.id')
-            ->join('patient_registrations', 'patient_registrations.patient_id', '=', 'patients.id')
-            ->where('patient_registrations.educator_id', $idEducator)->get();
+            ->whereIn('patients.id', function ($q) use ($idEducator) {
+                $q->select('patient_id')->from('patient_registrations')->where('educator_id', $idEducator);
+            })->get();
         return response()->json(['status' => true, 'weightAll' => $weight], 200);
     }
 
@@ -49,8 +50,9 @@ class PatientWeightController extends Controller
         $idEducator = request()->user()->id;
         $weight = PatientWeight::select('patient_weights.*', 'patients.id as patient_id', 'patients.name')
             ->join('patients', 'patient_weights.patient_id', '=', 'patients.id')
-            ->join('patient_registrations', 'patient_registrations.patient_id', '=', 'patients.id')
-            ->where('patient_registrations.educator_id', $idEducator)
+            ->whereIn('patients.id', function ($q) use ($idEducator) {
+                $q->select('patient_id')->from('patient_registrations')->where('educator_id', $idEducator);
+            })
             ->where('patient_weights.id', $id)->first();
 
 

@@ -29,8 +29,9 @@ class WorkoutFeedbackController extends Controller
             ->join('workout_items', 'workout_items.id', '=', 'workout_feedback.workout_item_id')
             ->join('workouts', 'workouts.id', '=', 'workout_items.workout_id')
             ->join('patients', 'patients.id', '=', 'workouts.patient_id')
-            ->join('patient_registrations', 'patient_registrations.patient_id', '=', 'patients.id')
-            ->where('patient_registrations.educator_id', $idEducator)
+            ->whereIn('patients.id', function ($q) use ($idEducator) {
+                $q->select('patient_id')->from('patient_registrations')->where('educator_id', $idEducator);
+            })
             ->orderBy('workout_feedback.created_at', 'desc')
             ->get();
 
@@ -70,13 +71,12 @@ class WorkoutFeedbackController extends Controller
                     'workouts.id as workout_id',
                     'patients.id as patient_id',
                     'patients.name as patient_name',
-                    'patient_registrations.educator_id as educator_id',
                 ])
                 ->join('workouts', 'workouts.id', '=', 'workout_items.workout_id')
                 ->join('patients', 'patients.id', '=', 'workouts.patient_id')
-                ->join('patient_registrations', 'patient_registrations.patient_id', '=', 'patients.id')
                 ->where('workout_items.id', $workoutFeedback->workout_item_id)
                 ->first();
+            $data->educator_id = request()->user()->id;
 
             if ($data && $data->educator_id) {
                 NotifyEducatorNewWorkoutFeedbackJob::dispatch(
@@ -113,8 +113,9 @@ class WorkoutFeedbackController extends Controller
             ->join('workout_items', 'workout_items.id', '=', 'workout_feedback.workout_item_id')
             ->join('workouts', 'workouts.id', '=', 'workout_items.workout_id')
             ->join('patients', 'patients.id', '=', 'workouts.patient_id')
-            ->join('patient_registrations', 'patient_registrations.patient_id', '=', 'patients.id')
-            ->where('patient_registrations.educator_id', $idEducator)
+            ->whereIn('patients.id', function ($q) use ($idEducator) {
+                $q->select('patient_id')->from('patient_registrations')->where('educator_id', $idEducator);
+            })
             ->where('workout_feedback.id', $id)
             ->first();
 

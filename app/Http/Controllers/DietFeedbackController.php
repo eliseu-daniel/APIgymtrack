@@ -25,8 +25,9 @@ class DietFeedbackController extends Controller
             ])
             ->join('diets', 'diets.id', '=', 'diet_feedback.diet_id')
             ->join('patients', 'patients.id', '=', 'diets.patient_id')
-            ->join('patient_registrations', 'patient_registrations.patient_id', '=', 'patients.id')
-            ->where('patient_registrations.educator_id', $idEducator)
+            ->whereIn('patients.id', function ($q) use ($idEducator) {
+                $q->select('patient_id')->from('patient_registrations')->where('educator_id', $idEducator);
+            })
             ->orderBy('diet_feedback.created_at', 'desc')
             ->get();
 
@@ -64,12 +65,11 @@ class DietFeedbackController extends Controller
                     'diets.id as diet_id',
                     'patients.id as patient_id',
                     'patients.name as patient_name',
-                    'patient_registrations.educator_id as educator_id',
                 ])
                 ->join('patients', 'patients.id', '=', 'diets.patient_id')
-                ->join('patient_registrations', 'patient_registrations.patient_id', '=', 'patients.id')
                 ->where('diets.id', $feedback->diet_id)
                 ->first();
+            $data->educator_id = request()->user()->id;
 
             if ($data && $data->educator_id) {
                 NotifyEducatorNewDietFeedbackJob::dispatch(
@@ -102,8 +102,9 @@ class DietFeedbackController extends Controller
             ])
             ->join('diets', 'diets.id', '=', 'diet_feedback.diet_id')
             ->join('patients', 'patients.id', '=', 'diets.patient_id')
-            ->join('patient_registrations', 'patient_registrations.patient_id', '=', 'patients.id')
-            ->where('patient_registrations.educator_id', $idEducator)
+            ->whereIn('patients.id', function ($q) use ($idEducator) {
+                $q->select('patient_id')->from('patient_registrations')->where('educator_id', $idEducator);
+            })
             ->where('diet_feedback.id', $id)
             ->first();
         if (!$idEducator) {

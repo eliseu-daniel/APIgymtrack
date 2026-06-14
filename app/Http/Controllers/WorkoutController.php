@@ -24,8 +24,9 @@ class WorkoutController extends Controller
         )
             ->join('patients', 'workouts.patient_id', '=', 'patients.id')
             ->join('workout_types', 'workout_types.id', '=', 'workouts.workout_type_id')
-            ->join('patient_registrations', 'patient_registrations.patient_id', '=', 'patients.id')
-            ->where('patient_registrations.educator_id', $idEducator)
+            ->whereIn('patients.id', function ($q) use ($idEducator) {
+                $q->select('patient_id')->from('patient_registrations')->where('educator_id', $idEducator);
+            })
             ->orderBy('workouts.start_date', 'desc')->get()], 200);
     }
 
@@ -63,10 +64,10 @@ class WorkoutController extends Controller
         )
             ->join('patients', 'workouts.patient_id', '=', 'patients.id')
             ->join('workout_types', 'workout_types.id', '=', 'workouts.workout_type_id')
-            ->join('patient_registrations', 'patient_registrations.patient_id', '=', 'patients.id')
-            ->where('patient_registrations.educator_id', $idEducator)
+            ->whereIn('patients.id', function ($q) use ($idEducator) {
+                $q->select('patient_id')->from('patient_registrations')->where('educator_id', $idEducator);
+            })
             ->where('workouts.id', $id)
-            
             ->first();
 
         if (!$workout) {
