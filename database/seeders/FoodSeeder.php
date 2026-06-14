@@ -9,11 +9,7 @@ class FoodSeeder extends Seeder
 {
     public function run(): void
     {
-<<<<<<< Updated upstream
         $foods = [
-=======
-          $foods = [
->>>>>>> Stashed changes
             'Arroz',
             'Feijão',
             'Macarrão',
