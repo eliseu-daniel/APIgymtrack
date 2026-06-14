@@ -12,7 +12,7 @@ class EducatorSeeder extends Seeder
      */
     public function run(): void
     {
-        \App\Models\Educator::create([
+        \App\Models\Educator::updateOrCreate([
             'name' => 'Educator Test',
             'email' => 'educator@test.com',
             'password' => bcrypt('123456'),

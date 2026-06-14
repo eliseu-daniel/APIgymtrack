@@ -13,7 +13,7 @@ class PatientSeeder extends Seeder
      */
     public function run(): void
     {
-        Patient::create([
+        Patient::updateOrCreate([
             "name" =>"Talita Bueno",
             "email" => "talita@gmail.com",
             "phone" => "12341234123",
