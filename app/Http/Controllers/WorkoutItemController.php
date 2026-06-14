@@ -2,49 +2,34 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\WorkoutItemConfirmed;
 use App\Http\Requests\CreateWorkoutItemRequest;
-use App\Jobs\NotifyPatientWorkoutItemConfirmedJob;
 use App\Models\WorkoutItem;
+use App\Services\NotificationService;
+use App\Services\WorkoutService;
 use Illuminate\Http\Request;
 
 class WorkoutItemController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function __construct(
+        private WorkoutService $workoutService,
+        private NotificationService $notificationService
+    ) {}
+
+    public function index(Request $request)
     {
+        $idEducator = $request->user()->id;
+        $perPage = (int) $request->input('per_page', 15);
+
         return response()->json([
             'status' => true,
-            'ItemWorkoutData' => WorkoutItem::select(
-                'workout_items.id as workout_item_id',
-                'workout_items.*',
-                'exercises.exercise as exercise_name'
-            )
-                ->join('exercises', 'workout_items.exercise_id', '=', 'exercises.id')
-                ->join('workouts', 'workout_items.workout_id', '=', 'workouts.id')
-                ->join('patients', 'workouts.patient_id', '=', 'patients.id')
-                ->join('patient_registrations', 'patient_registrations.patient_id', '=', 'patients.id')
-                ->where('patient_registrations.educator_id', request()->user()->id)
-                ->where('workout_items.is_active', true)
-                ->get()
+            'ItemWorkoutData' => $this->workoutService->getWorkoutItems($idEducator, $perPage)
         ], 200);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(CreateWorkoutItemRequest $request)
     {
-        $idEducator = request()->user()->id;
+        $idEducator = $request->user()->id;
 
         $dataItemWorkout = $request->validated();
         $itemWorkout = WorkoutItem::create($dataItemWorkout);
@@ -65,7 +50,7 @@ class WorkoutItemController extends Controller
                 ->first();
 
             if ($data) {
-                NotifyPatientWorkoutItemConfirmedJob::dispatch(
+                WorkoutItemConfirmed::dispatch(
                     (int) $itemWorkout->id,
                     (int) $data->patient_id,
                     (int) $data->educator_id
@@ -76,13 +61,8 @@ class WorkoutItemController extends Controller
         return response()->json(['status' => true, 'message' => 'Item de treino criado com sucesso!', 'ItemWorkoutData' => $itemWorkout], 201);
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(string $id)
     {
-
-
         $itemWorkout = WorkoutItem::select('workout_items.*', 'exercises.exercise as exercise_name')
             ->join('exercises', 'workout_items.exercise_id', '=', 'exercises.id')
             ->join('workouts', 'workout_items.workout_id', '=', 'workouts.id')
@@ -92,23 +72,13 @@ class WorkoutItemController extends Controller
             ->where('patient_registrations.educator_id', request()->user()->id)
             ->where('workout_items.is_active', true)
             ->first();
+
         if (!$itemWorkout) {
             return response()->json(['status' => false, 'message' => 'Item de treino não encontrado.'], 404);
         }
         return response()->json(['status' => true, 'ItemWorkoutData' => $itemWorkout], 200);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(CreateWorkoutItemRequest $request, string $id)
     {
         $itemWorkout = WorkoutItem::find($id);
@@ -136,7 +106,7 @@ class WorkoutItemController extends Controller
                 ->first();
 
             if ($data) {
-                NotifyPatientWorkoutItemConfirmedJob::dispatch(
+                WorkoutItemConfirmed::dispatch(
                     (int) $newData->id,
                     (int) $data->patient_id,
                     (int) $data->educator_id
@@ -147,9 +117,6 @@ class WorkoutItemController extends Controller
         return response()->json(['status' => true, 'message' => 'Item de treino atualizado com sucesso!', 'ItemWorkoutData' => $newData], 200);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(string $id)
     {
         $itemWorkout = WorkoutItem::find($id);
@@ -164,18 +131,12 @@ class WorkoutItemController extends Controller
     public function notifiedForPatient(Request $request)
     {
         $patientId = $request->user()->id;
-
-        $data = \App\Models\Notification::query()
-            ->where('patient_id', $patientId)
-            ->where('type', 'workout')
-            ->orderByDesc('created_at')
-            ->where('read', false)
-            ->get();
+        $data = $this->notificationService->getPatientNotifications($patientId, 'workout');
 
         if ($data->isEmpty()) {
             return response()->json(['status' => false, 'message' => 'Nenhuma notificação de treino encontrada.'], 200);
         }
-        
+
         return response()->json($data, 200);
     }
 

@@ -2,61 +2,39 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\DietItemConfirmed;
 use App\Http\Requests\CreateDietItemRequest;
-use App\Jobs\NotifyPatientDietItemConfirmedJob;
 use App\Models\DietItem;
+use App\Services\DietService;
+use App\Services\NotificationService;
 use Illuminate\Http\Request;
 
 class DietItemController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function __construct(
+        private DietService $dietService,
+        private NotificationService $notificationService
+    ) {}
+
+    public function index(Request $request)
     {
-        $idEducator = request()->user()->id;
+        $idEducator = $request->user()->id;
+        $perPage = (int) $request->input('per_page', 15);
+
         return response()->json([
             'status' => true,
-            'message' => DietItem::select(
-                'diet_items.id as diet_item_id',
-                'diets.id as diet_id',
-                'food.id as food_id',
-                'patients.name',
-                'food.name as food_name',
-                'diet_items.*',
-                'meals.id as meal_id',
-                'meals.name as meal_name',
-            )
-                ->join('diets', 'diets.id', '=', 'diet_items.diet_id')
-                ->join('patients', 'patients.id', '=', 'diets.patient_id')
-                ->join('patient_registrations', 'patient_registrations.patient_id', '=', 'patients.id')
-                ->join('food', 'food.id', '=', 'diet_items.food_id')
-                ->join('meals', 'meals.id', '=', 'diet_items.meals_id')
-                ->where('patient_registrations.educator_id', $idEducator)
-                ->where('diet_items.is_active', true)
-                ->get()
+            'message' => $this->dietService->getDietItems($idEducator, $perPage)
         ], 200);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(CreateDietItemRequest $request)
     {
-        $idEducator = request()->user()->id;
+        $idEducator = $request->user()->id;
 
         $validator = $request->validated();
         $dietItem = DietItem::create($validator);
 
-        if ($dietItem->send_notification = true) {
+        if ($dietItem->send_notification) {
             $itemWithDiet = DietItem::query()
                 ->select('diet_items.id', 'diets.patient_id', 'patient_registrations.educator_id')
                 ->join('diets', 'diets.id', '=', 'diet_items.diet_id')
@@ -67,7 +45,7 @@ class DietItemController extends Controller
                 ->first();
 
             if ($itemWithDiet) {
-                NotifyPatientDietItemConfirmedJob::dispatch(
+                DietItemConfirmed::dispatch(
                     (int) $dietItem->id,
                     (int) $itemWithDiet->patient_id,
                     (int) $itemWithDiet->educator_id
@@ -78,9 +56,6 @@ class DietItemController extends Controller
         return response()->json(['status' => true, 'message' => 'Item de dieta criado com sucesso.', 'data' => $dietItem], 201);
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(string $id)
     {
         $idEducator = request()->user()->id;
@@ -111,16 +86,6 @@ class DietItemController extends Controller
         return response()->json(['status' => true, 'message' => $dietItem]);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(CreateDietItemRequest $request, string $id)
     {
         $idEducator = request()->user()->id;
@@ -128,10 +93,7 @@ class DietItemController extends Controller
         $item = DietItem::find($id);
 
         if (!$item) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Item de dieta não encontrado.'
-            ], 404);
+            return response()->json(['status' => false, 'message' => 'Item de dieta não encontrado.'], 404);
         }
 
         $item->update(['is_active' => false]);
@@ -140,7 +102,7 @@ class DietItemController extends Controller
 
         $newItem = DietItem::create($validated);
 
-        if ($newItem->send_notification = true) {
+        if ($newItem->send_notification) {
             $itemWithDiet = DietItem::query()
                 ->select('diet_items.id', 'diets.patient_id', 'patient_registrations.educator_id')
                 ->join('diets', 'diets.id', '=', 'diet_items.diet_id')
@@ -151,7 +113,7 @@ class DietItemController extends Controller
                 ->first();
 
             if ($itemWithDiet) {
-                NotifyPatientDietItemConfirmedJob::dispatch(
+                DietItemConfirmed::dispatch(
                     (int) $newItem->id,
                     (int) $itemWithDiet->patient_id,
                     (int) $itemWithDiet->educator_id
@@ -159,16 +121,9 @@ class DietItemController extends Controller
             }
         }
 
-        return response()->json([
-            'status' => true,
-            'message' => 'Item de dieta atualizado com sucesso.',
-            'data' => $item->fresh()
-        ], 200);
+        return response()->json(['status' => true, 'message' => 'Item de dieta atualizado com sucesso.', 'data' => $item->fresh()], 200);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(string $id)
     {
         $Item = DietItem::find($id);
@@ -182,13 +137,7 @@ class DietItemController extends Controller
     public function notifiedForPatient(Request $request)
     {
         $patientId = $request->user()->id;
-
-        $data = \App\Models\Notification::query()
-            ->where('patient_id', $patientId)
-            ->where('type', 'diet')
-            ->orderByDesc('created_at')
-            ->where('read', false)
-            ->get();
+        $data = $this->notificationService->getPatientNotifications($patientId, 'diet');
 
         if ($data->isEmpty()) {
             return response()->json(['status' => false, 'message' => 'Nenhuma notificação de dieta encontrada.'], 200);

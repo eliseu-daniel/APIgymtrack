@@ -8,7 +8,7 @@ use Illuminate\Foundation\Configuration\Middleware;
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
         web: __DIR__ . '/../routes/web.php',
-        api: __DIR__ . '/../routes/api.php',
+        api: [__DIR__ . '/../routes/api.php', __DIR__ . '/../routes/api_v1.php'],
         commands: __DIR__ . '/../routes/console.php',
         health: '/up',
     )
@@ -16,12 +16,15 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'auth' => \App\Http\Middleware\Authenticate::class,
         ]);
+
+        $middleware->api(prepend: [
+            \Illuminate\Routing\Middleware\ThrottleRequests::class . ':api',
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
 
         $exceptions->renderable(function (AuthenticationException $e, $request) {
 
-            // Se for qualquer rota api/*, retorna JSON e impede redirect
             if ($request->is('api/*')) {
                 return response()->json([
                     'status' => false,
@@ -30,6 +33,6 @@ return Application::configure(basePath: dirname(__DIR__))
                 ], 401);
             }
 
-            return null; // web continua padrão
+            return null;
         });
     })->create();

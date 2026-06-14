@@ -1,0 +1,105 @@
+<?php
+
+use App\Http\Controllers\{
+    AdministratorController,
+    AnthropometryController,
+    AuthenticateController,
+    DietController,
+    DietFeedbackController,
+    DietFeedbackNotificationController,
+    DietItemController,
+    DietNotificationController,
+    EducatorController,
+    ExerciseController,
+    FoodController,
+    MealController,
+    MuscleGroupController,
+    NotificationController,
+    PatientController,
+    PatientRegistrationController,
+    PatientWeightController,
+    ProgressChartController,
+    WorkoutController,
+    WorkoutFeedbackController,
+    WorkoutFeedbackNotificationController,
+    WorkoutItemController,
+    WorkoutNotificationController,
+    WorkoutTypeController,
+};
+use Illuminate\Support\Facades\Route;
+
+Route::prefix('v1')->group(function () {
+
+    Route::post('/register', [AuthenticateController::class, 'register'])->name('register');
+    Route::post('/login', [AuthenticateController::class, 'login']);
+    Route::post('/loginPatient', [AuthenticateController::class, 'loginPatient']);
+    Route::post('/loginAdministrator', [AuthenticateController::class, 'loginAdministrator']);
+    Route::get('/download', [AuthenticateController::class, 'download']);
+
+    Route::middleware('auth:sanctum')->prefix('educators')->group(function () {
+        Route::post('logout', [AuthenticateController::class, 'logout']);
+
+        Route::get('notifications/', [WorkoutFeedbackController::class, 'newForEducator']);
+        Route::post('notifications/{id?}/read', [NotificationController::class, 'markAsRead']);
+        Route::post('notifications/read', [NotificationController::class, 'markAsRead']);
+
+        Route::apiResource('diets', DietController::class);
+        Route::apiResource('anthropometrys', AnthropometryController::class);
+        Route::apiResource('diet-feedbacks', DietFeedbackController::class);
+        Route::apiResource('diet-items', DietItemController::class);
+        Route::apiResource('educators', EducatorController::class);
+        Route::apiResource('patients', PatientController::class);
+        Route::get('patient/for-educator', [PatientController::class, 'PatientsForEducator']);
+        Route::apiResource('patient-registrations', PatientRegistrationController::class);
+        Route::apiResource('patient-weights', PatientWeightController::class);
+
+        Route::apiResource('progress-charts', ProgressChartController::class);
+        Route::get('progress/patients', [ProgressChartController::class, 'patients']);
+        Route::get('progress/reports', [ProgressChartController::class, 'reports']);
+
+        Route::apiResource('workouts', WorkoutController::class);
+        Route::apiResource('workout-feedbacks', WorkoutFeedbackController::class);
+        Route::apiResource('workout-items', WorkoutItemController::class);
+
+        Route::get('exercises', [ExerciseController::class, 'index']);
+        Route::get('exercises/{id}', [ExerciseController::class, 'show']);
+        Route::get('foods', [FoodController::class, 'index']);
+        Route::get('foods/{id}', [FoodController::class, 'show']);
+        Route::get('meals', [MealController::class, 'index']);
+        Route::get('meals/{id}', [MealController::class, 'show']);
+        Route::get('workout-type', [WorkoutTypeController::class, 'index']);
+        Route::get('workout-type/{id}', [WorkoutTypeController::class, 'show']);
+        Route::get('muscle-groups', [MuscleGroupController::class, 'index']);
+        Route::get('muscle-groups/{id}', [MuscleGroupController::class, 'show']);
+    });
+
+    Route::middleware('auth:patient')->prefix('patients')->group(function () {
+        Route::get('/diets', [DietController::class, 'getForPacientDiets']);
+        Route::get('/diet-items', [DietItemController::class, 'getForPacientDietItem']);
+        Route::get('/workouts', [WorkoutController::class, 'getForPacientWorkout']);
+        Route::get('/workout-items', [WorkoutItemController::class, 'getForPacientWorkoutItem']);
+        Route::get('exercises/{id}', [ExerciseController::class, 'show']);
+
+        Route::get('notifications/diet-items', [DietItemController::class, 'notifiedForPatient']);
+        Route::get('notifications/workout-items', [WorkoutItemController::class, 'notifiedForPatient']);
+        Route::post('notifications/{id?}/read', [NotificationController::class, 'markAsReadPatient']);
+        Route::post('notifications/read', [NotificationController::class, 'markAsReadPatient']);
+
+        Route::post('diet-feedbacks', [DietFeedbackController::class, 'store']);
+        Route::post('workout-feedbacks', [WorkoutFeedbackController::class, 'store']);
+
+        Route::post('logout', [AuthenticateController::class, 'logout']);
+    });
+
+    Route::middleware('auth:administrator')->prefix('administrators')->group(function () {
+        Route::apiResource('administrators', AdministratorController::class);
+        Route::apiResource('exercises', ExerciseController::class);
+        Route::apiResource('foods', FoodController::class);
+        Route::apiResource('meals', MealController::class);
+        Route::apiResource('workout-type', WorkoutTypeController::class);
+        Route::apiResource('muscle-groups', MuscleGroupController::class);
+
+        Route::post('logout', [AuthenticateController::class, 'logout']);
+    });
+
+});

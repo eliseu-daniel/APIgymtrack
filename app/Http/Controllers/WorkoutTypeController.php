@@ -5,59 +5,49 @@ namespace App\Http\Controllers;
 use App\Http\Requests\CreateWorkoutTypeRequest;
 use App\Models\WorkoutType;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class WorkoutTypeController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
-        return response()->json(['status' => true, 'WorkoutTypeData' => WorkoutType::all()], 200);
+        $workoutTypes = Cache::remember('workout_types:all', 86400, function () {
+            return WorkoutType::all();
+        });
+
+        return response()->json(['status' => true, 'WorkoutTypeData' => $workoutTypes], 200);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
         //
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(CreateWorkoutTypeRequest $request)
     {
-        $workoutType = request()->validated();
-        $workoutTypeCreate = WorkoutType::created($workoutType);
-
+        $workoutType = $request->validated();
+        $workoutTypeCreate = WorkoutType::create($workoutType);
+        Cache::forget('workout_types:all');
         return response()->json(['status' => true, 'message' => 'Tipo de Treino criado com sucesso.', 'WorkoutTypeData' => $workoutTypeCreate], 201);
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(string $id)
     {
-        $workoutType = WorkoutType::find($id);
+        $workoutType = Cache::remember("workout_types:{$id}", 86400, function () use ($id) {
+            return WorkoutType::find($id);
+        });
+
         if (!$workoutType) {
             return response()->json(['status' => false, 'message' => 'Tipo de treino não existe'], 404);
         }
         return response()->json(['status' => true, 'WorkoutTypeData' => $workoutType], 200);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
     public function edit(string $id)
     {
         //
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(CreateWorkoutTypeRequest $request, string $id)
     {
         $workoutType = WorkoutType::find($id);
@@ -65,18 +55,18 @@ class WorkoutTypeController extends Controller
             return response()->json(['status' => false, 'message' => 'Tipo de treino não existe'], 404);
         }
         $workoutType->update(['is_active' => false]);
-        $workoutTypeCreate = request()->validated();
-        $workoutTypeCreate = WorkoutType::created($workoutTypeCreate);
+        $workoutTypeCreate = $request->validated();
+        $workoutTypeCreate = WorkoutType::create($workoutTypeCreate);
+        Cache::forget('workout_types:all');
         return response()->json(['status' => true, 'message' => 'Tipo de Treino atualizado com sucesso.', 'WorkoutTypeData' => $workoutTypeCreate], 200);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(string $id)
     {
         $workoutType = WorkoutType::find($id);
         $workoutType->update(['is_active' => false]);
+        Cache::forget('workout_types:all');
+        Cache::forget("workout_types:{$id}");
         return response()->json(['status' => true, 'message' => 'Tipo de Treino removido com sucesso.'], 200);
     }
 }

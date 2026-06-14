@@ -3,54 +3,33 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\CreatePatientRequest;
-use App\Models\Patient;
-use Illuminate\Auth\Events\Validated;
+use App\Services\PatientService;
 use Illuminate\Http\Request;
 
 class PatientController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+    public function __construct(
+        private PatientService $patientService
+    ) {}
+
     public function index()
     {
-        $patients = Patient::all();
-        return response()->json(['status' => true, "data" => $patients], 200);
+        return response()->json([
+            'status' => true,
+            "data" => $this->patientService->getAllPatients()
+        ], 200);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(CreatePatientRequest $request)
     {
-        $patientValidated = $request->validated();
-
-        if ($patientValidated['birth_date']) {
-            $birthDate = $this->convertDateFormat($patientValidated['birth_date']);
-            if ($birthDate) {
-                $patientValidated['birth_date'] = $birthDate;
-            }
-        }
-
-        $patient = Patient::create($patientValidated);
+        $patient = $this->patientService->createPatient($request->validated());
 
         return response()->json(['status' => true, 'message' => 'Paciente criado com sucesso.', 'data' => $patient], 201);
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(string $id)
     {
-        $patient = Patient::find($id);
+        $patient = $this->patientService->getPatient((int) $id);
         if (!$patient) {
             return response()->json(['status' => false, 'message' => 'Paciente não encontrado.'], 404);
         }
@@ -60,83 +39,33 @@ class PatientController extends Controller
         return response()->json(['status' => true, 'data' => $patient], 200);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(CreatePatientRequest $request, string $id)
     {
-        $patient = Patient::find($id);
-
-        if (!$patient) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Paciente não encontrado.'
-            ], 404);
-        }
-
-        $patientValidated = $request->validated();
-
-        if (!empty($patientValidated['birth_date'])) {
-            $birthDate = $this->convertDateFormat($patientValidated['birth_date']);
-
-            if ($birthDate) {
-                $patientValidated['birth_date'] = $birthDate;
-            }
-        }
-
-        $patient->update($patientValidated);
-
-        return response()->json([
-            'status' => true,
-            'message' => 'Paciente atualizado com sucesso.',
-            'data' => $patient->fresh()
-        ], 200);
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        $patient = Patient::find($id);
+        $patient = $this->patientService->updatePatient((int) $id, $request->validated());
         if (!$patient) {
             return response()->json(['status' => false, 'message' => 'Paciente não encontrado.'], 404);
         }
 
-        $patient->update(['is_active' => false]);
-        return response()->json(['status' => true, 'message' => 'Paciente desativado com sucesso.'], 200);
+        return response()->json(['status' => true, 'message' => 'Paciente atualizado com sucesso.', 'data' => $patient], 200);
     }
 
-    public function convertDateFormat($date)
+    public function destroy(string $id)
     {
-        if ($date) {
-            $dateTime = \DateTime::createFromFormat('d/m/Y', $date);
-            if ($dateTime) {
-                return $dateTime->format('Y-m-d');
-            }
+        $patient = $this->patientService->deactivatePatient((int) $id);
+        if (!$patient) {
+            return response()->json(['status' => false, 'message' => 'Paciente não encontrado.'], 404);
         }
+
+        return response()->json(['status' => true, 'message' => 'Paciente desativado com sucesso.'], 200);
     }
 
     public function PatientsForEducator()
     {
         $idEducator = request()->user()->id;
 
-        $patients = Patient::select('patients.*')
-            ->join('patient_registrations', 'patients.id', '=', 'patient_registrations.patient_id')
-            ->where('patient_registrations.educator_id', $idEducator)
-            ->get();
-
         return response()->json([
             'status' => true,
-            'data' => $patients
+            'data' => $this->patientService->getPatientsForEducator($idEducator)
         ], 200);
     }
 }
